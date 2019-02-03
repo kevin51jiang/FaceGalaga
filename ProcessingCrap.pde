@@ -52,15 +52,33 @@ abstract class Screen {
 
 class ScreenManager {
     Map<String, Screen> screens = new Map<>();
+    public String currentScreenUid;
+
+    final int transitionTime = 2000;//total time for transition/fade to black thing in milliseconds
+    int currentTransitionProcess = -1;
 
     public ScreenManager(){}
+
+    public void display(){
+        screens.get(currentScreenUid).display();
+    }
 
     public void addScreen(Screen toAdd){
         screens.put(toAdd.uid, toAdd)
     }
 
+    /**
+    * Removes a Screen from the screens map, making it impossible to use in the future.
+    * Most likely won't ever be used since a HashMap has a lookup time of O(1)
+    */
     public void removeScreen(String screenUid){
         screens.remove(toRemove);
     }
+
+    public void changeScreen(String screenUid){
+        this.currentScreenUid = screenUid;
+    }
+
+
 
 }
