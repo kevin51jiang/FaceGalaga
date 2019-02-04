@@ -27,7 +27,7 @@ public void setup() {
     sm.init(new TestMenu(sm, "Scr1"));
     sm.add(new TestMenu2(sm, "Scr2"));
 
-    
+    stroke(0);
 }
 
 public void draw() {
@@ -109,9 +109,11 @@ class ScreenManager {
                 previousScreen.display();
             }
 
-            int percentAlpha = round(1.5f * 255 * (-(1.0f/frameRate) * abs(currentTransitionProcess - frameRate) + 1 ));
-            if(percentAlpha > 255)  percentAlpha = 255;
+            int percentAlpha = round( 255 * (-(1.0f/frameRate / 2) * abs(currentTransitionProcess - frameRate / 2) + 1 )) ;
+            if(percentAlpha > 255) percentAlpha = 255;// add on extra completely black time
 
+
+            println("percentAlpha + currentTransitionProcess : "+percentAlpha + " " + currentTransitionProcess);
             fill(0, 0 , 0, percentAlpha);
             rect(0, 0, width, height);
             --currentTransitionProcess;
