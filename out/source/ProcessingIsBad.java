@@ -20,15 +20,16 @@ public class ProcessingIsBad extends PApplet {
 
 ScreenManager sm;
 public void setup() {
+
+    frameRate(60);
     
-      sm = new ScreenManager();
-    sm.add(new TestMenu(sm, "Scr1"));
+    sm = new ScreenManager();
+    sm.init(new TestMenu(sm, "Scr1"));
     sm.add(new TestMenu2(sm, "Scr2"));
 
-    sm.setScreen("Scr1");
+    
 }
 
-Integer[] arr ={1,2,3,4};
 public void draw() {
     sm.display();
 
@@ -52,14 +53,16 @@ public void mousePressed(){
 
 
 /**
-*
-*
-*
+* Generic Screen object. Handles all the internal logic / displaying by itself.
+* Used for big chunks of the game e.g. Main menu, Credits, and individual game panels.
 */
 abstract class Screen {
     private ScreenManager scrnMgr;
     public String uid;
+
     public abstract void display();
+
+    public abstract void onClick();
 
     public Screen (ScreenManager scrnMgr, String uid) {
         this.scrnMgr = scrnMgr;
@@ -79,14 +82,39 @@ abstract class Screen {
 class ScreenManager {
     public HashMap<String, Screen> screens = new HashMap<String, Screen>();
     public String currentScreenUid;
+    private Screen previousScreen;
 
-    final int transitionTime = 2000;//total time for transition/fade to black thing in milliseconds
-    int currentTransitionProcess = -1;
-    long lastTimeCheck;
+    final int transitionTime = 2000 * 2;//total time for transition/fade to black thing in milliseconds
+    int currentTransitionProcess = -1; //How far it's into the transition. -1 shows that it's not currently in a transition.
+    int transitionFrames = -1;
+
     public ScreenManager(){}
+
+    /**
+    * Onclick function that parses everything
+    * Each scene handles its own onclick thing so that it's abstracted away
+    * The ScreenManager blocks any clicks while the transition screen is happening.
+    */
+    public void onClick() {
+        if(currentTransitionProcess < -1) {
+            screens.get(currentScreenUid).onClick();
+        }
+    }
 
     public void display(){
         screens.get(currentScreenUid).display();
+
+        if(currentTransitionProcess >= 0) {
+
+            if(currentTransitionProcess > transitionFrames / 2){
+                previousScreen.display();
+            }
+
+            fill(0, 0 , 0, round(255 * (-(1.0f/frameRate) * abs(currentTransitionProcess - frameRate) + 1 )));
+            rect(0, 0, width, height);
+            --currentTransitionProcess;
+        }
+        
     }
 
     public void add(Screen toAdd){
@@ -108,8 +136,19 @@ class ScreenManager {
     * Also deals with starting the thing to fade the whole screen to black and back.
     */
     public void setScreen(String screenUid){
-        this.currentScreenUid = screenUid;
+        previousScreen = screens.get(currentScreenUid);
         
+        this.currentScreenUid = screenUid;
+
+        currentTransitionProcess = round(transitionTime * (1.0f / frameRate));
+        transitionFrames = currentTransitionProcess;
+        
+    }
+
+    public void init(Screen scr) {
+        this.add(scr);
+        this.currentScreenUid = scr.uid;
+        this.previousScreen = scr;//prevent nullpointerexception
     }
 
 
@@ -119,15 +158,21 @@ class ScreenManager {
 
 class TestMenu extends Screen{
 
+        public TestMenu(ScreenManager sm, String uid) {
+        super(sm, uid);
+    }
+
+
     public void display(){
-        background(128);
+        background(255, 0, 0);
         text(("This is test screen" + millis()), 40, 40, 100, 100);
 
         rect(200, 200, 350, 200);
     }
 
-    public TestMenu(ScreenManager sm, String uid) {
-        super(sm, uid);
+
+    public void onClick(){
+
     }
 
 }
@@ -136,13 +181,17 @@ class TestMenu2 extends Screen {
     
 
     public void display() {
-        background(0);
+        background(0, 255, 0);
         text("This is the second test screen" + millis(), 40, 40, 100, 100);
     }
 
     public TestMenu2(ScreenManager sm, String uid){
         super(sm, uid);
     };
+
+    public void onClick() {
+
+    }
 
 }
   public void settings() {  size(640, 480); }
