@@ -1,30 +1,12 @@
-PShape s;
-
+ScreenManager sm;
 void setup() {
-    size(640,480, P3D);
-    s = loadShape("./other.obj");
-    frameRate(10);
+  sm = new ScreenManager();
+  sm.add()
 }
 
-int mod = 0;
 
 void draw() {
-    background(0);
-    textSize(32);
-    translate(width/2, height/2);
-    fill(0, 102, 153, 204);
-
-    rect(20, 20, 150, 120);
-    text("word", 12, 45, -30);  // Specify a z-axis value
-    text("word", 12, 60);
-    
-  
-    shape(s, 0, 0);
-    camera(width/2, height/2, (height/2) / tan((PI + mod)/6), width/2, height/2, 0, 0, 1, 0);
-
-    lights();
-
-    ++mod;
+    sm.display();
 
 }
 
@@ -40,10 +22,10 @@ void draw() {
 */
 abstract class Screen {
 
-    public abstract String uid;
+    public final abstract String uid;
     public abstract void display();
 
-    public Screen (arguments) {
+    public Screen () {
 
     }
 
@@ -56,29 +38,51 @@ class ScreenManager {
 
     final int transitionTime = 2000;//total time for transition/fade to black thing in milliseconds
     int currentTransitionProcess = -1;
-
+    long lastTimeCheck;
     public ScreenManager(){}
 
     public void display(){
         screens.get(currentScreenUid).display();
     }
 
-    public void addScreen(Screen toAdd){
-        screens.put(toAdd.uid, toAdd)
+    public void add(Screen toAdd){
+        screens.put(toAdd.uid, toAdd);b 
     }
 
     /**
     * Removes a Screen from the screens map, making it impossible to use in the future.
     * Most likely won't ever be used since a HashMap has a lookup time of O(1)
     */
-    public void removeScreen(String screenUid){
+    public void remove(String screenUid){
         screens.remove(toRemove);
     }
 
+
+    /**
+    * Changes the screen e.g. from main menu to actual game.
+    * Also deals with starting the thing to fade the whole screen to black and back.
+    */
     public void changeScreen(String screenUid){
         this.currentScreenUid = screenUid;
+        this.currentTransitionProcess = 0;
+        lastTimeCheck = millis();
     }
 
 
+
+}
+
+
+class TestMenu extends Screen{
+
+    public final String uid = "TestScreen";
+    public void display(){
+        background(128);
+        text("This is test screen" + String.toString(millis()), 40, 40, 15, 20);
+    }
+
+    public TestMenu () {
+        
+    }
 
 }
