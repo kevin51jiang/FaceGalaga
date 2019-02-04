@@ -9,7 +9,7 @@ void setup() {
     sm.init(new TestMenu(sm, "Scr1"));
     sm.add(new TestMenu2(sm, "Scr2"));
 
-    
+    nostroke();
 }
 
 void draw() {
@@ -87,12 +87,14 @@ class ScreenManager {
         screens.get(currentScreenUid).display();
 
         if(currentTransitionProcess >= 0) {
-
             if(currentTransitionProcess > transitionFrames / 2){
                 previousScreen.display();
             }
 
-            fill(0, 0 , 0, round(255 * (-(1.0/frameRate) * abs(currentTransitionProcess - frameRate) + 1 )));
+            int percentAlpha = round(1.5 * 255 * (-(1.0/frameRate) * abs(currentTransitionProcess - frameRate) + 1 ));
+            if(percentAlpha > 255)  percentAlpha = 255;
+
+            fill(0, 0 , 0, percentAlpha);
             rect(0, 0, width, height);
             --currentTransitionProcess;
         }

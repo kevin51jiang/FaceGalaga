@@ -40,9 +40,9 @@ public void draw() {
 } 
 
 public void mousePressed(){
-    if(sm.currentScreenUid.equals("Scr1")){
+    if(sm.currentScreenUid.equals("Scr1")) {
         sm.setScreen("Scr2");
-    }else {
+    } else {
         sm.setScreen("Scr1");
     }
 }
@@ -105,12 +105,14 @@ class ScreenManager {
         screens.get(currentScreenUid).display();
 
         if(currentTransitionProcess >= 0) {
-
             if(currentTransitionProcess > transitionFrames / 2){
                 previousScreen.display();
             }
 
-            fill(0, 0 , 0, round(255 * (-(1.0f/frameRate) * abs(currentTransitionProcess - frameRate) + 1 )));
+            int percentAlpha = round(1.5f * 255 * (-(1.0f/frameRate) * abs(currentTransitionProcess - frameRate) + 1 ));
+            if(percentAlpha > 255)  percentAlpha = 255;
+
+            fill(0, 0 , 0, percentAlpha);
             rect(0, 0, width, height);
             --currentTransitionProcess;
         }
