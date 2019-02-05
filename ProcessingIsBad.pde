@@ -294,11 +294,11 @@ class ScreenManager {
 // START OF UI ELEMENTS
 // 
 
-class Button() {
+class Button {
 
-    private PVector corner1, corner2;
+    public PVector corner1, corner2;
 
-    public Button (PVector origin, PVector dimensions) {
+    public Button (PVector origin, PVector dimensions) throws Exception{
         this.corner1 = origin;
         this.corner2 = dimensions;
 
@@ -308,7 +308,7 @@ class Button() {
         }
     }
 
-    public Button (PVector origin, int wide, int high) {
+    public Button (PVector origin, int wide, int high) throws Exception {
         this.corner1 = origin;
         this.corner2 = new PVector(origin.x + wide, origin.y + high);
 
@@ -318,9 +318,9 @@ class Button() {
         }
     }
 
-    public Button (int x, int y, int wide, int high) {
+    public Button (int x, int y, int wide, int high) throws Exception {
         this.corner1 = new PVector(x, y);
-        this.corner2 = new PVector(x + wide, int y + high);
+        this.corner2 = new PVector(x + wide,  y + high);
 
         if(wide <1 || high < 1) {
             throw new Exception("Width and height of a button must be positive");
@@ -328,8 +328,8 @@ class Button() {
     }
 
     public boolean isClicked(int x, int y){
-        if(x > corner1 && x < corner2 
-            && y>corner1 && y < corner2 ){
+        if(x > corner1.x && x < corner2.x 
+            && y>corner1.y && y < corner2.y ){
                 return true;
         } else {
             return false;
@@ -391,20 +391,24 @@ class MainMenu extends Screen {
     private final PFont titleFont = createFont("Rajdhani-Regular.ttf", 96);
     private final PVector buttonDimensions = new PVector(width / 4.2, height / 5);
     
-    private String currentStatus = "main-screen";
     private final color darksky = color(0, 0, 20);
     private final color medSky = color(0, 75, 127);
     private final color lightsky = color(7, 150, 255);
     private final int medSkyY = 30;
     
-    private final Button btnPlay = new Button()
-
+    private Button btnPlay;
 
 
     public MainMenu(ScreenManager sm) { 
         super(sm, MainMenu.uid);
-        spaceship = 
         spaceship.rotate(TAU * 7.0/8.0);
+
+        try {
+            btnPlay = new Button(new PVector(width / 2 - buttonDimensions.x / 2, height / 2 + buttonDimensions.y),
+                                             buttonDimensions);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void display() {
@@ -420,26 +424,23 @@ class MainMenu extends Screen {
 
         //clouds back
 
-        if(currentStatus.equals("main-screen")) {
-            //spaceship
-            shape(spaceship, width/2 - ( sqrt(2 * sq(height/(3))) / 2) , height/2 + height/12, height/3, height/3);
+        //spaceship
+        shape(spaceship, width/2 - ( sqrt(2 * sq(height/(3))) / 2) , height/2 + height/12, height/3, height/3);
 
-            //clouds front
-
+        //clouds front
 
 
-            //Title
-            noStroke();
-            fill(255);
-            textFont(titleFont,80);
-            text("Rocket", 525, 200);
 
-            //buttons
+        //Title
+        noStroke();
+        fill(255);
+        textFont(titleFont,80);
+        text("Rocket", 525, 200);
+
+        //buttons
+        rect(btnPlay.)
             
 
-        } else if (currentStatus.equals("")){
-
-        }
     }
 
     public void onClick() {

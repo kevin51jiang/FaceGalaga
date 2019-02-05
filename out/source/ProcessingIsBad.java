@@ -40,9 +40,9 @@ public void setup() {
 public void draw() {
     sm.display();
 
-    if(frameCount%240 == 0) {
-        println("Screens included: "+Arrays.deepToString(sm.screens.values().toArray()));
-    }
+    // if(frameCount%240 == 0) {
+    //     println("Screens included: "+Arrays.deepToString(sm.screens.values().toArray()));
+    // }
 
 } 
 
@@ -56,11 +56,36 @@ public int timeToFrames(int time) {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 // 
 // END OF NORMAL PROCESSING SKETCH
 // 
 // START OF ANIMATION OBJECTS
 // 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class AnimationQueue {
     private ArrayList<Animatable> currentAnimations = new ArrayList<Animatable>();
@@ -127,11 +152,37 @@ abstract class Animatable {
 
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 // 
 // END OF ANIMATION OBJECTS
 // 
 // START OF SCREEN OBJECTS
 // 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /**
@@ -242,11 +293,95 @@ class ScreenManager {
 
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // 
 // END OF SCREEN OBJECTS
+//
+// START OF UI ELEMENTS
+// 
+
+class Button {
+
+    private PVector corner1, corner2;
+
+    public Button (PVector origin, PVector dimensions) throws Exception{
+        this.corner1 = origin;
+        this.corner2 = dimensions;
+
+        
+        if(dimensions.x < 1 || dimensions.y < 1) {
+            throw new Exception("Width and height of a button must be positive");
+        }
+    }
+
+    public Button (PVector origin, int wide, int high) throws Exception {
+        this.corner1 = origin;
+        this.corner2 = new PVector(origin.x + wide, origin.y + high);
+
+        
+        if(wide <1 || high < 1) {
+            throw new Exception("Width and height of a button must be positive");
+        }
+    }
+
+    public Button (int x, int y, int wide, int high) throws Exception {
+        this.corner1 = new PVector(x, y);
+        this.corner2 = new PVector(x + wide,  y + high);
+
+        if(wide <1 || high < 1) {
+            throw new Exception("Width and height of a button must be positive");
+        }
+    }
+
+    public boolean isClicked(int x, int y){
+        if(x > corner1.x && x < corner2.x 
+            && y>corner1.y && y < corner2.y ){
+                return true;
+        } else {
+            return false;
+        }
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+// 
+// END OF UI ELEMENTS
 // 
 // START OF SPECIFIC SCREENS/ANIMATION OBJECTS
 // 
+
+
+
+
+
+
+
+
 
 class TestMenu extends Screen {
 
@@ -270,23 +405,31 @@ class TestMenu extends Screen {
 }
 
 class MainMenu extends Screen {
+    //config
     private final static String uid = "MainMenu";
-    private PShape spaceship;
+    private PShape spaceship = loadShape("./spaceship.svg");;
+    private final PFont titleFont = createFont("Rajdhani-Regular.ttf", 96);
+    private final PVector buttonDimensions = new PVector(width / 4.2f, height / 5);
+    
+    private String currentStatus = "main-screen";
     private final int darksky = color(0, 0, 20);
     private final int medSky = color(0, 75, 127);
     private final int lightsky = color(7, 150, 255);
     private final int medSkyY = 30;
-    private final PFont titleFont = createFont("Rajdhani-Regular.ttf", 96);
-    private String currentStatus = "main-screen";
-
-
-    private final PVector buttonDimensions = new PVector();
+    
+    private Button btnPlay;
 
 
     public MainMenu(ScreenManager sm) { 
         super(sm, MainMenu.uid);
-        spaceship = loadShape("./spaceship.svg");
         spaceship.rotate(TAU * 7.0f/8.0f);
+
+        try {
+            btnPlay = new Button(new PVector(width / 2 - buttonDimensions.x / 2, height / 2 + buttonDimensions.y),
+                                             buttonDimensions);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void display() {
@@ -317,6 +460,7 @@ class MainMenu extends Screen {
             text("Rocket", 525, 200);
 
             //buttons
+            
 
         } else if (currentStatus.equals("")){
 
