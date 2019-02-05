@@ -28,8 +28,49 @@ void mousePressed(){
 }
 
 
+// 
+// END OF NORMAL PROCESSING SKETCH
+// 
+// START OF ANIMATION OBJECTS
+// 
 
+class AnimationQueue {
+    private ArrayList<Animatable> currentAnimations = new ArrayList<Animatable>();
+    public AnimationQueue() {}
 
+    public addNew(Animatable anim){
+        currentAnimations.add(anim);
+    }
+
+    public remove(Animatable anim){
+        currentAnimations.remove(anim);
+    }
+
+    public void display() {
+        for(int i = 0; i < currentAnimations; i++){
+            currentAnimations.get(i).display();
+        }
+    }
+
+}
+
+/**
+* Class that implements linear animations ----- may switch towards eased in/out animations in the future
+*/
+class Animatable(){
+    private int startx, starty, 
+                destx, desty;
+
+    private int framesLeft;
+    public void display();
+
+}
+
+// 
+// END OF ANIMATION OBJECTS
+// 
+// START OF SCREEN OBJECTS
+// 
 
 
 /**
@@ -139,6 +180,11 @@ class ScreenManager {
 
 }
 
+// 
+// END OF SCREEN OBJECTS
+// 
+// START OF SPECIFIC SCREENS/ANIMATION OBJECTS
+// 
 
 class TestMenu extends Screen {
 
