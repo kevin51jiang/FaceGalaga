@@ -24,6 +24,9 @@ public class ProcessingIsBad extends PApplet {
 
 ScreenManager sm;
 
+final int opencvRefreshes = 4; //number of times opencv tries to detect faces per second
+                                // intentionally can skip some frames to increase the performance of the game
+
 public void setup() {
 
     frameRate(60);
@@ -273,12 +276,17 @@ class MainMenu extends Screen {
     private final int medSky = color(0, 75, 127);
     private final int lightsky = color(7, 150, 255);
     private final int medSkyY = 30;
+    private final PFont titleFont = createFont("Rajdhani-Regular.ttf", 96);
+    private String currentStatus = "main-screen";
+
+
+    private final PVector buttonDimensions = new PVector();
 
 
     public MainMenu(ScreenManager sm) { 
         super(sm, MainMenu.uid);
         spaceship = loadShape("./spaceship.svg");
-        spaceship.rotate(2 * PI * 7.0f/8.0f);
+        spaceship.rotate(TAU * 7.0f/8.0f);
     }
 
     public void display() {
@@ -291,17 +299,37 @@ class MainMenu extends Screen {
             stroke(c);
             line(0, i, width, i);
         }
-        shape(spaceship, width/2 - ( sqrt(2 * sq(height/(2.5f))) / 2) , height/2, height/2.5f, height/2.5f);
+
+        //clouds back
+
+        if(currentStatus.equals("main-screen")) {
+            //spaceship
+            shape(spaceship, width/2 - ( sqrt(2 * sq(height/(3))) / 2) , height/2 + height/12, height/3, height/3);
+
+            //clouds front
 
 
-       
+
+            //Title
+            noStroke();
+            fill(255);
+            textFont(titleFont,80);
+            text("Rocket", 525, 200);
+
+            //buttons
+
+        } else if (currentStatus.equals("")){
+
+        }
     }
 
     public void onClick() {
+        if (currentStatus.equals("main-screen")) {
 
+        }
     }
 }
-  public void settings() {  size(1100, 600); }
+  public void settings() {  size(960, 540); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "ProcessingIsBad" };
     if (passedArgs != null) {

@@ -4,10 +4,13 @@ import gab.opencv.*;
 
 ScreenManager sm;
 
+final int opencvRefreshes = 4; //number of times opencv tries to detect faces per second
+                                // intentionally can skip some frames to increase the performance of the game
+
 void setup() {
 
     frameRate(60);
-    size(1100, 600);
+    size(960, 540);
     sm = new ScreenManager();
     sm.init(new MainMenu(sm));
 
@@ -17,9 +20,9 @@ void setup() {
 void draw() {
     sm.display();
 
-    if(frameCount%240 == 0) {
-        println("Screens included: "+Arrays.deepToString(sm.screens.values().toArray()));
-    }
+    // if(frameCount%240 == 0) {
+    //     println("Screens included: "+Arrays.deepToString(sm.screens.values().toArray()));
+    // }
 
 } 
 
@@ -33,11 +36,36 @@ int timeToFrames(int time) {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 // 
 // END OF NORMAL PROCESSING SKETCH
 // 
 // START OF ANIMATION OBJECTS
 // 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class AnimationQueue {
     private ArrayList<Animatable> currentAnimations = new ArrayList<Animatable>();
@@ -104,11 +132,37 @@ abstract class Animatable {
 
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 // 
 // END OF ANIMATION OBJECTS
 // 
 // START OF SCREEN OBJECTS
 // 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /**
@@ -219,11 +273,95 @@ class ScreenManager {
 
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // 
 // END OF SCREEN OBJECTS
+//
+// START OF UI ELEMENTS
+// 
+
+class Button() {
+
+    private PVector corner1, corner2;
+
+    public Button (PVector origin, PVector dimensions) {
+        this.corner1 = origin;
+        this.corner2 = dimensions;
+
+        
+        if(dimensions.x < 1 || dimensions.y < 1) {
+            throw new Exception("Width and height of a button must be positive");
+        }
+    }
+
+    public Button (PVector origin, int wide, int high) {
+        this.corner1 = origin;
+        this.corner2 = new PVector(origin.x + wide, origin.y + high);
+
+        
+        if(wide <1 || high < 1) {
+            throw new Exception("Width and height of a button must be positive");
+        }
+    }
+
+    public Button (int x, int y, int wide, int high) {
+        this.corner1 = new PVector(x, y);
+        this.corner2 = new PVector(x + wide, int y + high);
+
+        if(wide <1 || high < 1) {
+            throw new Exception("Width and height of a button must be positive");
+        }
+    }
+
+    public boolean isClicked(int x, int y){
+        if(x > corner1 && x < corner2 
+            && y>corner1 && y < corner2 ){
+                return true;
+        } else {
+            return false;
+        }
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+// 
+// END OF UI ELEMENTS
 // 
 // START OF SPECIFIC SCREENS/ANIMATION OBJECTS
 // 
+
+
+
+
+
+
+
+
 
 class TestMenu extends Screen {
 
@@ -247,18 +385,26 @@ class TestMenu extends Screen {
 }
 
 class MainMenu extends Screen {
+    //config
     private final static String uid = "MainMenu";
-    private PShape spaceship;
+    private PShape spaceship = loadShape("./spaceship.svg");;
+    private final PFont titleFont = createFont("Rajdhani-Regular.ttf", 96);
+    private final PVector buttonDimensions = new PVector(width / 4.2, height / 5);
+    
+    private String currentStatus = "main-screen";
     private final color darksky = color(0, 0, 20);
     private final color medSky = color(0, 75, 127);
     private final color lightsky = color(7, 150, 255);
     private final int medSkyY = 30;
+    
+    private final Button btnPlay = new Button()
+
 
 
     public MainMenu(ScreenManager sm) { 
         super(sm, MainMenu.uid);
-        spaceship = loadShape("./spaceship.svg");
-        spaceship.rotate(2 * PI * 7.0/8.0);
+        spaceship = 
+        spaceship.rotate(TAU * 7.0/8.0);
     }
 
     public void display() {
@@ -271,13 +417,34 @@ class MainMenu extends Screen {
             stroke(c);
             line(0, i, width, i);
         }
-        shape(spaceship, width/2 - ( sqrt(2 * sq(height/(2.5))) / 2) , height/2, height/2.5, height/2.5);
+
+        //clouds back
+
+        if(currentStatus.equals("main-screen")) {
+            //spaceship
+            shape(spaceship, width/2 - ( sqrt(2 * sq(height/(3))) / 2) , height/2 + height/12, height/3, height/3);
+
+            //clouds front
 
 
-       
+
+            //Title
+            noStroke();
+            fill(255);
+            textFont(titleFont,80);
+            text("Rocket", 525, 200);
+
+            //buttons
+            
+
+        } else if (currentStatus.equals("")){
+
+        }
     }
 
     public void onClick() {
+        if (currentStatus.equals("main-screen")) {
 
+        }
     }
 }
