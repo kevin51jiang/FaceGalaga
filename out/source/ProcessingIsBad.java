@@ -4,6 +4,8 @@ import processing.event.*;
 import processing.opengl.*; 
 
 import java.util.*; 
+import processing.video.*; 
+import gab.opencv.*; 
 
 import java.util.HashMap; 
 import java.util.ArrayList; 
@@ -18,14 +20,16 @@ public class ProcessingIsBad extends PApplet {
 
 
 
+
+
 ScreenManager sm;
+
 public void setup() {
 
     frameRate(60);
     
     sm = new ScreenManager();
-    sm.init(new TestMenu(sm, "Scr1"));
-    sm.add(new TestMenu2(sm, "Scr2"));
+    sm.init(new MainMenu(sm));
 
     stroke(0);
 }
@@ -33,18 +37,14 @@ public void setup() {
 public void draw() {
     sm.display();
 
-    if(frameCount%240 == 0){
+    if(frameCount%240 == 0) {
         println("Screens included: "+Arrays.deepToString(sm.screens.values().toArray()));
     }
 
 } 
 
 public void mousePressed(){
-    if(sm.currentScreenUid.equals("Scr1")) {
-        sm.setScreen("Scr2");
-    } else {
-        sm.setScreen("Scr1");
-    }
+
 }
 
 
@@ -60,14 +60,14 @@ abstract class Screen {
     private ScreenManager scrnMgr;
     public String uid;
 
-    public abstract void display();
-
-    public abstract void onClick();
-
     public Screen (ScreenManager scrnMgr, String uid) {
         this.scrnMgr = scrnMgr;
         this.uid = uid;
     }
+
+    public abstract void display();
+
+    public abstract void onClick();
 
     public void setManager(ScreenManager scrnMgr) {
         this.scrnMgr = scrnMgr;
@@ -139,7 +139,7 @@ class ScreenManager {
     * Sets the screen e.g. from main menu to actual game.
     * Also deals with starting the thing to fade the whole screen to black and back.
     */
-    public void setScreen(String screenUid){
+    public void setScreen(String screenUid) {
         previousScreen = screens.get(currentScreenUid);
         
         this.currentScreenUid = screenUid;
@@ -160,14 +160,14 @@ class ScreenManager {
 }
 
 
-class TestMenu extends Screen{
+class TestMenu extends Screen {
 
         public TestMenu(ScreenManager sm, String uid) {
         super(sm, uid);
     }
 
 
-    public void display(){
+    public void display() {
         background(255, 0, 0);
         text(("This is test screen" + millis()), 40, 40, 100, 100);
 
@@ -175,30 +175,56 @@ class TestMenu extends Screen{
     }
 
 
-    public void onClick(){
-
-    }
-
-}
-
-class TestMenu2 extends Screen {
-    
-
-    public void display() {
-        background(0, 255, 0);
-        text("This is the second test screen" + millis(), 40, 40, 100, 100);
-    }
-
-    public TestMenu2(ScreenManager sm, String uid){
-        super(sm, uid);
-    };
-
     public void onClick() {
 
     }
 
 }
-  public void settings() {  size(640, 480); }
+
+class MainMenu extends Screen {
+    private final static String uid = "MainMenu";
+    private PShape spaceship;
+    private final int darksky = color(0, 0, 20);
+    private final int medSky = color(0, 75, 127);
+    private final int lightsky = color(7, 150, 255);
+    private final int medSkyY = 30;
+
+
+    public MainMenu(ScreenManager sm) { 
+        super(sm, MainMenu.uid);
+        spaceship = loadShape("./spaceship.svg");
+        spaceship.rotate(2 * PI * 7.0f/8.0f);
+    }
+
+    public void display() {
+
+        //Background
+        noFill();
+        for (int i = 0; i <= height; i++) {
+            float inter = map(i, 0, height, 0, 1);
+            int c = lerpColor(darksky, lightsky, inter);
+            stroke(c);
+            line(0, i, width, i);
+        }
+        shape(spaceship, width/2 - ( sqrt(2 * sq(height/(2.5f))) / 2) , height/2, height/2.5f, height/2.5f);
+
+
+       
+    }
+
+    public void onClick() {
+
+    }
+}
+
+abstract class Animation {
+    abstract final int duration;//duration in milliseconds
+    
+    public Animation() {};
+
+
+}
+  public void settings() {  size(1100, 600); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "ProcessingIsBad" };
     if (passedArgs != null) {
