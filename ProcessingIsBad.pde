@@ -30,6 +30,10 @@ void mousePressed(){
     sm.onClick();
 }
 
+void keyPressed() {
+    sm.onType();
+}
+
 
 int timeToFrames(int time) {
     return round(frameRate / 1000.0 * time);
@@ -91,7 +95,7 @@ class AnimationQueue {
 * Class that implements linear animations ----- may switch towards eased in/out animations in the future
 */
 abstract class Animatable {
-    PVector start, current, dest;
+    PVector start, dest;
     AnimationQueue queue;
     private float framesLeft, framesMax;
     
@@ -128,6 +132,9 @@ abstract class Animatable {
         return PVector.lerp(start, dest, framesLeft / framesMax);
     }
         
+    public boolean isInAnimation() {
+        return framesLeft > 0;
+    }
 
 
 }
@@ -182,6 +189,8 @@ abstract class Screen {
 
     public abstract void onClick();
 
+    public abstract void onType();
+
     public void setManager(ScreenManager scrnMgr) {
         this.scrnMgr = scrnMgr;
     }
@@ -201,6 +210,8 @@ class ScreenManager {
     int currentTransitionProcess = -1; //How far it's into the transition. -1 shows that it's not currently in a transition.
     int transitionFrames = -1;
 
+    private boolean isMute = false;
+
     public ScreenManager(){}
 
     /**
@@ -209,9 +220,16 @@ class ScreenManager {
     * The ScreenManager blocks any clicks while the transition screen is happening.
     */
     public void onClick() {
+        
         //will block any clicks that happen during transitions/loading time.
-        if(currentTransitionProcess > -1) {
+        if(currentTransitionProcess == -1) { 
             screens.get(currentScreenUid).onClick();
+        }
+    }
+
+    public void onType() {
+        if(currentTransitionProcess == -1) {
+            screens.get(currentScreenUid).onType();
         }
     }
 
@@ -269,7 +287,13 @@ class ScreenManager {
         this.previousScreen = scr;//prevent nullpointerexception
     }
 
+    public void toggleSound() {
+        this.isMute = !isMute;
+    }
 
+    public boolean getIsMute(){
+        return isMute;
+    }
 
 }
 
@@ -300,7 +324,7 @@ class Button {
 
     public Button (PVector origin, PVector dimensions) throws Exception{
         this.corner1 = origin;
-        this.corner2 = dimensions;
+        this.corner2 = new PVector(origin.x + dimensions.x, origin.y + dimensions.y);
 
         
         if(dimensions.x < 1 || dimensions.y < 1) {
@@ -327,9 +351,15 @@ class Button {
         }
     }
 
-    public boolean isClicked(int x, int y){
-        if(x > corner1.x && x < corner2.x 
-            && y>corner1.y && y < corner2.y ){
+    public String toString(){
+        return "C1: " + corner1.x + ", " + corner1.y + "\n"
+                +"C2: " + corner2.y + ", " + corner2.y + "\n";
+    }
+
+    public boolean isClicked(){
+
+        if(mouseX > corner1.x && mouseX < corner2.x
+            && mouseY >corner1.y &&  mouseY < corner2.y ){
                 return true;
         } else {
             return false;
@@ -363,40 +393,20 @@ class Button {
 
 
 
-class TestMenu extends Screen {
-
-        public TestMenu(ScreenManager sm, String uid) {
-        super(sm, uid);
-    }
-
-
-    public void display() {
-        background(255, 0, 0);
-        text(("This is test screen" + millis()), 40, 40, 100, 100);
-
-        rect(200, 200, 350, 200);
-    }
-
-
-    public void onClick() {
-
-    }
-
-}
 
 class MainMenu extends Screen {
     //config
     private final static String uid = "MainMenu";
     private PShape spaceship = loadShape("./spaceship.svg");;
     private final PFont titleFont = createFont("Rajdhani-Regular.ttf", 96);
-    private final PVector buttonDimensions = new PVector(width / 4.2, height / 5);
+    private final PVector buttonDimensions = new PVector(width / 25, width/25);
     
     private final color darksky = color(0, 0, 20);
     private final color medSky = color(0, 75, 127);
     private final color lightsky = color(7, 150, 255);
-    private final int medSkyY = 30;
+    private final float percentDark = 0.7;
     
-    private Button btnPlay;
+    private Button btnVolume, btnTutorial;
 
 
     public MainMenu(ScreenManager sm) { 
@@ -404,8 +414,8 @@ class MainMenu extends Screen {
         spaceship.rotate(TAU * 7.0/8.0);
 
         try {
-            btnPlay = new Button(new PVector(width / 2 - buttonDimensions.x / 2, height / 2 + buttonDimensions.y),
-                                             buttonDimensions);
+            btnVolume = new Button(new PVector(20, 20), buttonDimensions );
+            btnTutorial = new Button(new PVector(buttonDimensions.x + 40, 20 ), buttonDimensions);
         } catch (Exception e){
             e.printStackTrace();
         }
@@ -417,11 +427,12 @@ class MainMenu extends Screen {
         noFill();
         for (int i = 0; i <= height; i++) {
             float inter = map(i, 0, height, 0, 1);
-            color c = lerpColor(darksky, lightsky, inter);
+            color c = lerpColor(darksky, medSky, inter);
             stroke(c);
             line(0, i, width, i);
         }
 
+      
         //clouds back
 
         //spaceship
@@ -435,17 +446,31 @@ class MainMenu extends Screen {
         noStroke();
         fill(255);
         textFont(titleFont,80);
-        text("Rocket", 525, 200);
+        textAlign(CENTER, CENTER);
+        text("Rocket", width / 2, height / 6);
 
-        //buttons
-        rect(btnPlay.)
-            
+        //volume button
+        fill(255, 0, 0);
+        rect(btnVolume.corner1.x, btnVolume.corner1.y, buttonDimensions.x, buttonDimensions.y);
+
+        //tutorial button
+        fill(0, 255, 0);
+        rect(btnTutorial.corner1.x, btnTutorial.corner1.y, buttonDimensions.x, buttonDimensions.y);
 
     }
 
     public void onClick() {
-        if (currentStatus.equals("main-screen")) {
+        if(btnTutorial.isClicked()) {
+            println("Tutorial got clicked");
+        } else if (btnVolume.isClicked()) {
+            println("Volume got clicked");
+        }
+    }
 
+    public void onType() {
+        if(keyCode == ENTER){
+          //  scrnMgr.setScreen("game");
+          println("Main menu recieved [ENTER]");
         }
     }
 }
