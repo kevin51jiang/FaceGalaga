@@ -259,7 +259,8 @@ class MainMenu extends Screen {
         //clouds back
 
 
-
+        //spaceship display
+        queue.display();
 
 
         //clouds front
@@ -282,7 +283,6 @@ class MainMenu extends Screen {
         fill(0, 255, 0);
         rect(btnTutorial.corner1.x, btnTutorial.corner1.y, buttonDimensions.x, buttonDimensions.y);
 
-        queue.display();
 
     }
 
@@ -305,14 +305,14 @@ class MainMenu extends Screen {
 class Spaceship extends Animatable{
 
     private static final int timePerAnim = 4000;
-    private static final int mobilityX = 25, mobilityY = 25;
+    private static final int mobilityX = 20, mobilityY = 35;
     private PShape drawing = loadShape("./spaceship.svg");
     private PVector modifier = new PVector(0, 0);
     
-
     public Spaceship(AnimationQueue queue){
-        super(new PVector(width / 2- sqrt(2 * sq(height / 3)), height / 2 - sqrt(2 * sq(height / 3))), 
-            new PVector(width / 2 + random(mobilityX) - mobilityX / 2 - sqrt(2 * sq(height / 3)), height / 2 + random(mobilityY) - mobilityY / 2 - sqrt(2 * sq(height / 3)) ),
+        super(new PVector(width / 2 - sqrt(2 * sq(height / 2.5f)) / 2, height / 2 ), 
+            new PVector(width / 2 - (sqrt(2 * sq(height / 2.5f)) / 2) + (random(mobilityX) - mobilityX / 2), 
+                        height / 2 + random(mobilityY) - mobilityY / 2  ),
             timePerAnim,
             queue);
 
@@ -325,15 +325,13 @@ class Spaceship extends Animatable{
 
 
         if(frameCount % 60 == 0) {
-            modifier = new PVector( random(3), random(3));
+            modifier = new PVector( random(3.0f) - 1.5f, random(3.0f) - 1.5f);
         }
 
         //TODO: ALLOW ARROW KEYS TO CONTROL THE ROCKETSHIP'S ROTATION
-        drawing.rotate(radians(random(0.5f)-0.25f));//rotate the rocketship a tiny bit each frame
+        drawing.rotate(radians(random(0.25f)-0.125f));//rotate the rocketship a tiny bit each frame
         
-
-        shape(drawing, temp.x + modifier.x, temp.y + modifier.y, height / 3, height / 3);//tiny little movements to simulate how a rocket is unstable
-        
+        shape(drawing, temp.x + modifier.x, temp.y + modifier.y, height / 2.5f, height / 2.5f);//tiny little movements to simulate how a rocket is unstable
         
         pushStyle();
             stroke(5);
@@ -349,7 +347,7 @@ class Spaceship extends Animatable{
             // this.addAnimation(new PVector(width / 2 + random(mobilityX) - mobilityX / 2, height / 2 + random(mobilitY) - mobilitY / 2 ),
             //                 timePerAnim,
             //                 queue);
-            this.addDeltaAnimation(new PVector(random(mobilityX), random(mobilityY)),
+            this.addDeltaAnimation(new PVector(random(mobilityX) - mobilityX / 2, random(mobilityY) - mobilityY / 2),
                                 timePerAnim,
                                 queue);
             queue.add(this);
