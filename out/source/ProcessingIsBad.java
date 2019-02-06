@@ -62,7 +62,7 @@ class AnimationQueue {
     private ArrayList<Animatable> currentAnimations = new ArrayList<Animatable>();
     public AnimationQueue() {}
 
-    public void addNew(Animatable anim){
+    public void add(Animatable anim){
         currentAnimations.add(anim);
     }
 
@@ -82,7 +82,7 @@ class AnimationQueue {
 * Class that implements linear animations ----- may switch towards eased in/out animations in the future
 */
 abstract class Animatable {
-    PVector start, dest;
+    PVector start, current, dest;
     AnimationQueue queue;
     private float framesLeft, framesMax;
     
@@ -90,14 +90,18 @@ abstract class Animatable {
     *   Time is in milliseconds
     */
     public Animatable(PVector start, PVector dest, int time, AnimationQueue queue){
-        this.start = start;
-        this.dest = dest;
-
-        this.framesMax = timeToFrames(time);
-        this.framesLeft = framesMax;
-
-        this.queue = queue;
+        this.current = start;
+        this.addAnimation(dest, time, queue);
     }
+
+    public Animatable(PVector start) {
+        this.start = start;
+        this.current = start;
+        this.dest = start;
+        framesLeft = 0;
+        framesMax = 0;
+    }
+
 
     /*
     *   Subclasses will ALWAYS call super.display() at the end of their display() methods to help with cleanup.
@@ -111,18 +115,44 @@ abstract class Animatable {
         }
     }
 
+    public void addAnimation(PVector dest, int time, AnimationQueue queue){
+        this.start = current;
+        this.dest = dest;
+
+        this.framesMax = timeToFrames(time);
+        this.framesLeft = framesMax;
+
+        this.queue = queue;
+
+        println("added anim: " + start.x + ", " + start.y + " - " + dest.x + ", " + dest.y);
+    }
+
+    public void addDeltaAnimation(PVector delta, int time, AnimationQueue queue){
+        this.start = current;
+        this.dest = new PVector(current.x + delta.x, current.y + delta.y);
+
+        this.framesMax = timeToFrames(time);
+        this.framesLeft = framesMax;
+
+        this.queue = queue;
+
+        println("added anim: " + start.x + ", " + start.y + " - " + dest.x + ", " + dest.y);
+
+    }
 
     /*
     *   If ever implement a bezier ease in/out system, this is the method that needs changing.
     */
     public PVector getCurrentPos() {
-        return PVector.lerp(start, dest, framesLeft / framesMax);
+        current = PVector.lerp(start, dest, framesLeft / framesMax);
+        return current;
     }
         
     public boolean isInAnimation() {
         return framesLeft > 0;
     }
 
+    
 
 }
 
@@ -184,21 +214,21 @@ class Button {
 class MainMenu extends Screen {
     //config
     private final static String uid = "MainMenu";
-    private PShape spaceship = loadShape("./spaceship.svg");;
+    // private PShape spaceship = loadShape("./spaceship.svg");;
     private final PFont titleFont = createFont("Rajdhani-Regular.ttf", 96);
     private final PVector buttonDimensions = new PVector(width / 25, width/25);
     
+    AnimationQueue queue = new AnimationQueue();
     private final int darksky = color(0, 0, 20);
     private final int medSky = color(0, 75, 127);
     private final int lightsky = color(7, 150, 255);
     private final float percentDark = 0.7f;
     
     private Button btnVolume, btnTutorial;
-
+    private final Spaceship spaceship;
 
     public MainMenu(ScreenManager sm) { 
         super(sm, MainMenu.uid);
-        spaceship.rotate(TAU * 7.0f/8.0f);
 
         try {
             btnVolume = new Button(new PVector(20, 20), buttonDimensions );
@@ -206,6 +236,9 @@ class MainMenu extends Screen {
         } catch (Exception e){
             e.printStackTrace();
         }
+        spaceship = new Spaceship(queue);
+        
+        queue.add(spaceship);
     }
 
     public void display() {
@@ -222,10 +255,12 @@ class MainMenu extends Screen {
       
         //clouds back
 
-        //spaceship
-        shape(spaceship, width/2 - ( sqrt(2 * sq(height/(3))) / 2) , height/2 + height/12, height/3, height/3);
+
+
+
 
         //clouds front
+
 
 
 
@@ -244,6 +279,8 @@ class MainMenu extends Screen {
         fill(0, 255, 0);
         rect(btnTutorial.corner1.x, btnTutorial.corner1.y, buttonDimensions.x, buttonDimensions.y);
 
+        queue.display();
+
     }
 
     public void onClick() {
@@ -261,6 +298,41 @@ class MainMenu extends Screen {
         }
     }
 }
+
+class Spaceship extends Animatable{
+
+    private static final int timePerAnim = 4000;
+    private static final int mobilityX = 100, mobilitY = 100;
+    private PShape drawing = loadShape("./spaceship.svg");
+    private PVector modifier = new PVector(0, 0);
+
+    public Spaceship(AnimationQueue queue){
+        super(new PVector(width / 2, height / 2), 
+            new PVector(width / 2 + random(mobilityX) - mobilityX / 2, height / 2 + random(mobilitY) - mobilitY / 2 ),
+            timePerAnim,
+            queue);
+
+        imageMode(CENTER);
+        drawing.rotate(TAU * 7.0f/8.0f);
+    }
+
+    public void display() {
+        PVector temp = this.getCurrentPos();
+        if(frameCount % 13 == 0) {
+            modifier = new PVector( random(3), random(3));
+        }
+        shape(drawing, temp.x + modifier.x, temp.y + modifier.y, height / 3, height / 3);//tiny little movements to simulate how a rocket is unstable
+        super.display();//cleanup
+
+        //tries to add itself back with a new animation
+        if(!this.isInAnimation()) {
+            this.addAnimation(new PVector(width / 2 + random(mobilityX) - mobilityX / 2, height / 2 + random(mobilitY) - mobilitY / 2 ),
+                            timePerAnim,
+                            queue);
+            queue.add(this);
+        }
+    }
+}
 /**
 * Generic Screen object. Handles all the internal logic / displaying by itself.
 * Used for big chunks of the game e.g. Main menu, Credits, and individual game panels.
@@ -268,6 +340,7 @@ class MainMenu extends Screen {
 abstract class Screen {
     private ScreenManager scrnMgr;
     public String uid;
+
 
     public Screen (ScreenManager scrnMgr, String uid) {
         this.scrnMgr = scrnMgr;
@@ -286,6 +359,10 @@ abstract class Screen {
 
     public ScreenManager getScreenManager(){
         return this.scrnMgr;
+    }
+
+    public String toString() {
+        return uid;
     }
 }
 
@@ -382,6 +459,14 @@ class ScreenManager {
 
     public boolean getIsMute(){
         return isMute;
+    }
+
+    public String toString() {
+        boolean isInTransition = false;
+        if(currentTransitionProcess > -1 ){
+            isInTransition = true;
+        }
+        return "ScreenManager: " + Arrays.deepToString(screens.values().toArray()) + "Transition?: " + isInTransition;
     }
 
 }

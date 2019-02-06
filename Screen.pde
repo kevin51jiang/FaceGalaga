@@ -6,6 +6,7 @@ abstract class Screen {
     private ScreenManager scrnMgr;
     public String uid;
 
+
     public Screen (ScreenManager scrnMgr, String uid) {
         this.scrnMgr = scrnMgr;
         this.uid = uid;
@@ -23,6 +24,10 @@ abstract class Screen {
 
     public ScreenManager getScreenManager(){
         return this.scrnMgr;
+    }
+
+    public String toString() {
+        return uid;
     }
 }
 
@@ -119,6 +124,14 @@ class ScreenManager {
 
     public boolean getIsMute(){
         return isMute;
+    }
+
+    public String toString() {
+        boolean isInTransition = false;
+        if(currentTransitionProcess > -1 ){
+            isInTransition = true;
+        }
+        return "ScreenManager: " + Arrays.deepToString(screens.values().toArray()) + "Transition?: " + isInTransition;
     }
 
 }
