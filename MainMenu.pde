@@ -162,7 +162,7 @@ class Cloud extends Animatable {
     private int[] instructions;
 
     private static final PVector maxDimensions = new PVector(150, 75),
-                                    ;
+                            PVector radiusDimensions = new PVector(20, );
     
 
     public Cloud(int lowTime, int highTime, AnimationQueue queue) {
