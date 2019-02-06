@@ -156,12 +156,18 @@ class Spaceship extends Animatable {
 */ 
 class Cloud extends Animatable {
 
+    /**
+    *   Instructions stored like following: [circ1x, circ1y, circ1radius, circ2x, circ2y, ... , circnradius]
+    */
     private int[] instructions;
-    private static final PVector maxDimensions = new PVector(150, );
+
+    private static final PVector maxDimensions = new PVector(150, 75),
+                                    ;
+    
 
     public Cloud(int lowTime, int highTime, AnimationQueue queue) {
-        super(random(width), random(lowTime, highTime), );
+        super(random(width), -250, random(lowTime, highTime), queue);
 
-
+        instructions = new int[random(3, 10) * 3];
     }
 }
