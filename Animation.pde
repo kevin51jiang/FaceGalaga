@@ -35,6 +35,16 @@ abstract class Animatable {
         this.addAnimation(dest, time, queue);
     }
 
+    /**
+    *   Made specifically for objects that start at the top and
+    *   go completely vertical down until they despawn.
+    */
+    public Animatable(int x, int y, int deltaY, int time, AnimationQueue queue) {
+        this.current = new PVector(x, y);
+        PVector dest = new PVector(x, y + deltaY);
+        this.addAnimation(dest, time, queue);
+    }
+
     public Animatable(PVector start) {
         this.start = start;
         this.current = start;

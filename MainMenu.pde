@@ -108,10 +108,18 @@ class Spaceship extends Animatable {
     public void display() {
         PVector temp = this.getCurrentPos();
 
-
-        if(frameCount % 60 == 0) {
-            modifier = new PVector( random(3.0) - 1.5, random(3.0) - 1.5);
+        if(frameCount % timeToFrames(500) == 0){
+            //MAYBE spawn clouds
+            if(random(100) < 25) { //25% every half second will spawn a cloud
+                AnimationQueue.add(new Cloud());
+            }
+            
+            if(frameCount % timeToFrames(1000) == 0) {
+                modifier = new PVector( random(3.0) - 1.5, random(3.0) - 1.5);
+            }
         }
+
+        
 
         //TODO: ALLOW ARROW KEYS TO CONTROL THE ROCKETSHIP'S ROTATION
         drawing.rotate(radians(random(0.25)-0.125));//rotate the rocketship a tiny bit each frame
@@ -137,5 +145,23 @@ class Spaceship extends Animatable {
                                 queue);
             queue.add(this);
         }
+    }
+}
+
+/**
+*   Great for randomly generating clouds that fly down. 
+*   Clouds are composed of a bunch of completely white circles thrown on top of each other
+*   And then are slightly transparent to produce that cloud feeling. --- MAYBE
+*   Will automatically despawn after reaching its destination (completely below the screen)
+*/ 
+class Cloud extends Animatable {
+
+    private int[] instructions;
+    private static final PVector maxDimensions = new PVector(150, );
+
+    public Cloud(int lowTime, int highTime, AnimationQueue queue) {
+        super(random(width), random(lowTime, highTime), );
+
+
     }
 }
