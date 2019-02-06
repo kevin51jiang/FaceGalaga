@@ -85,7 +85,10 @@ abstract class Animatable {
     *   If ever implement a bezier ease in/out system, this is the method that needs changing.
     */
     public PVector getCurrentPos() {
-        current = PVector.lerp(start, dest, framesLeft / framesMax);
+
+
+        current = PVector.lerp(dest, start, framesLeft / framesMax);
+        //println("Current pos: " + current.x + ", " + current.y + " lerp%= " + framesLeft/framesMax * 100);
         return current;
     }
         

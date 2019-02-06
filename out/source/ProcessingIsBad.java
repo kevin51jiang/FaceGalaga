@@ -144,7 +144,10 @@ abstract class Animatable {
     *   If ever implement a bezier ease in/out system, this is the method that needs changing.
     */
     public PVector getCurrentPos() {
-        current = PVector.lerp(start, dest, framesLeft / framesMax);
+
+
+        current = PVector.lerp(dest, start, framesLeft / framesMax);
+        //println("Current pos: " + current.x + ", " + current.y + " lerp%= " + framesLeft/framesMax * 100);
         return current;
     }
         
@@ -302,13 +305,14 @@ class MainMenu extends Screen {
 class Spaceship extends Animatable{
 
     private static final int timePerAnim = 4000;
-    private static final int mobilityX = 100, mobilitY = 100;
+    private static final int mobilityX = 25, mobilityY = 25;
     private PShape drawing = loadShape("./spaceship.svg");
     private PVector modifier = new PVector(0, 0);
+    
 
     public Spaceship(AnimationQueue queue){
-        super(new PVector(width / 2, height / 2), 
-            new PVector(width / 2 + random(mobilityX) - mobilityX / 2, height / 2 + random(mobilitY) - mobilitY / 2 ),
+        super(new PVector(width / 2- sqrt(2 * sq(height / 3)), height / 2 - sqrt(2 * sq(height / 3))), 
+            new PVector(width / 2 + random(mobilityX) - mobilityX / 2 - sqrt(2 * sq(height / 3)), height / 2 + random(mobilityY) - mobilityY / 2 - sqrt(2 * sq(height / 3)) ),
             timePerAnim,
             queue);
 
@@ -318,17 +322,36 @@ class Spaceship extends Animatable{
 
     public void display() {
         PVector temp = this.getCurrentPos();
-        if(frameCount % 13 == 0) {
+
+
+        if(frameCount % 60 == 0) {
             modifier = new PVector( random(3), random(3));
         }
+
+        //TODO: ALLOW ARROW KEYS TO CONTROL THE ROCKETSHIP'S ROTATION
+        drawing.rotate(radians(random(0.5f)-0.25f));//rotate the rocketship a tiny bit each frame
+        
+
         shape(drawing, temp.x + modifier.x, temp.y + modifier.y, height / 3, height / 3);//tiny little movements to simulate how a rocket is unstable
+        
+        
+        pushStyle();
+            stroke(5);
+            fill(255,255,0);
+            point(temp.x + modifier.x, temp.y + modifier.y);//DEBUG
+            rect(temp.x + modifier.x, temp.y + modifier.y, 3, 3);
+        popStyle();
+        
         super.display();//cleanup
 
         //tries to add itself back with a new animation
         if(!this.isInAnimation()) {
-            this.addAnimation(new PVector(width / 2 + random(mobilityX) - mobilityX / 2, height / 2 + random(mobilitY) - mobilitY / 2 ),
-                            timePerAnim,
-                            queue);
+            // this.addAnimation(new PVector(width / 2 + random(mobilityX) - mobilityX / 2, height / 2 + random(mobilitY) - mobilitY / 2 ),
+            //                 timePerAnim,
+            //                 queue);
+            this.addDeltaAnimation(new PVector(random(mobilityX), random(mobilityY)),
+                                timePerAnim,
+                                queue);
             queue.add(this);
         }
     }
