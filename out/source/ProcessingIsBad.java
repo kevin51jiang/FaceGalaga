@@ -33,7 +33,6 @@ public void setup() {
     
     sm = new ScreenManager();
     sm.init(new MainMenu(sm));
-
     stroke(0);
 }
 
@@ -59,38 +58,6 @@ public int timeToFrames(int time) {
     return round(frameRate / 1000.0f * time);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-// 
-// END OF NORMAL PROCESSING SKETCH
-// 
-// START OF ANIMATION OBJECTS
-// 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class AnimationQueue {
     private ArrayList<Animatable> currentAnimations = new ArrayList<Animatable>();
     public AnimationQueue() {}
@@ -115,7 +82,7 @@ class AnimationQueue {
 * Class that implements linear animations ----- may switch towards eased in/out animations in the future
 */
 abstract class Animatable {
-    PVector start, current, dest;
+    PVector start, dest;
     AnimationQueue queue;
     private float framesLeft, framesMax;
     
@@ -164,34 +131,136 @@ abstract class Animatable {
 
 
 
+class Button {
+
+    public PVector corner1, corner2;
+
+    public Button (PVector origin, PVector dimensions) throws Exception{
+        this.corner1 = origin;
+        this.corner2 = new PVector(origin.x + dimensions.x, origin.y + dimensions.y);
+
+        
+        if(dimensions.x < 1 || dimensions.y < 1) {
+            throw new Exception("Width and height of a button must be positive");
+        }
+    }
+
+    public Button (PVector origin, int wide, int high) throws Exception {
+        this.corner1 = origin;
+        this.corner2 = new PVector(origin.x + wide, origin.y + high);
+
+        
+        if(wide <1 || high < 1) {
+            throw new Exception("Width and height of a button must be positive");
+        }
+    }
+
+    public Button (int x, int y, int wide, int high) throws Exception {
+        this.corner1 = new PVector(x, y);
+        this.corner2 = new PVector(x + wide,  y + high);
+
+        if(wide <1 || high < 1) {
+            throw new Exception("Width and height of a button must be positive");
+        }
+    }
+
+    public String toString(){
+        return "C1: " + corner1.x + ", " + corner1.y + "\n"
+                +"C2: " + corner2.y + ", " + corner2.y + "\n";
+    }
+
+    public boolean isClicked(){
+
+        if(mouseX > corner1.x && mouseX < corner2.x
+            && mouseY >corner1.y &&  mouseY < corner2.y ){
+                return true;
+        } else {
+            return false;
+        }
+    }
+
+}
+
+class MainMenu extends Screen {
+    //config
+    private final static String uid = "MainMenu";
+    private PShape spaceship = loadShape("./spaceship.svg");;
+    private final PFont titleFont = createFont("Rajdhani-Regular.ttf", 96);
+    private final PVector buttonDimensions = new PVector(width / 25, width/25);
+    
+    private final int darksky = color(0, 0, 20);
+    private final int medSky = color(0, 75, 127);
+    private final int lightsky = color(7, 150, 255);
+    private final float percentDark = 0.7f;
+    
+    private Button btnVolume, btnTutorial;
+
+
+    public MainMenu(ScreenManager sm) { 
+        super(sm, MainMenu.uid);
+        spaceship.rotate(TAU * 7.0f/8.0f);
+
+        try {
+            btnVolume = new Button(new PVector(20, 20), buttonDimensions );
+            btnTutorial = new Button(new PVector(buttonDimensions.x + 40, 20 ), buttonDimensions);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void display() {
+
+        //Background
+        noFill();
+        for (int i = 0; i <= height; i++) {
+            float inter = map(i, 0, height, 0, 1);
+            int c = lerpColor(darksky, medSky, inter);
+            stroke(c);
+            line(0, i, width, i);
+        }
+
+      
+        //clouds back
+
+        //spaceship
+        shape(spaceship, width/2 - ( sqrt(2 * sq(height/(3))) / 2) , height/2 + height/12, height/3, height/3);
+
+        //clouds front
 
 
 
+        //Title
+        noStroke();
+        fill(255);
+        textFont(titleFont,80);
+        textAlign(CENTER, CENTER);
+        text("Rocket", width / 2, height / 6);
 
+        //volume button
+        fill(255, 0, 0);
+        rect(btnVolume.corner1.x, btnVolume.corner1.y, buttonDimensions.x, buttonDimensions.y);
 
+        //tutorial button
+        fill(0, 255, 0);
+        rect(btnTutorial.corner1.x, btnTutorial.corner1.y, buttonDimensions.x, buttonDimensions.y);
 
+    }
 
+    public void onClick() {
+        if(btnTutorial.isClicked()) {
+            println("Tutorial got clicked");
+        } else if (btnVolume.isClicked()) {
+            println("Volume got clicked");
+        }
+    }
 
-// 
-// END OF ANIMATION OBJECTS
-// 
-// START OF SCREEN OBJECTS
-// 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    public void onType() {
+        if(keyCode == ENTER){
+          //  scrnMgr.setScreen("game");
+          println("Main menu recieved [ENTER]");
+        }
+    }
+}
 /**
 * Generic Screen object. Handles all the internal logic / displaying by itself.
 * Used for big chunks of the game e.g. Main menu, Credits, and individual game panels.
@@ -318,182 +387,6 @@ class ScreenManager {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// 
-// END OF SCREEN OBJECTS
-//
-// START OF UI ELEMENTS
-// 
-
-class Button {
-
-    public PVector corner1, corner2;
-
-    public Button (PVector origin, PVector dimensions) throws Exception{
-        this.corner1 = origin;
-        this.corner2 = new PVector(origin.x + dimensions.x, origin.y + dimensions.y);
-
-        
-        if(dimensions.x < 1 || dimensions.y < 1) {
-            throw new Exception("Width and height of a button must be positive");
-        }
-    }
-
-    public Button (PVector origin, int wide, int high) throws Exception {
-        this.corner1 = origin;
-        this.corner2 = new PVector(origin.x + wide, origin.y + high);
-
-        
-        if(wide <1 || high < 1) {
-            throw new Exception("Width and height of a button must be positive");
-        }
-    }
-
-    public Button (int x, int y, int wide, int high) throws Exception {
-        this.corner1 = new PVector(x, y);
-        this.corner2 = new PVector(x + wide,  y + high);
-
-        if(wide <1 || high < 1) {
-            throw new Exception("Width and height of a button must be positive");
-        }
-    }
-
-    public String toString(){
-        return "C1: " + corner1.x + ", " + corner1.y + "\n"
-                +"C2: " + corner2.y + ", " + corner2.y + "\n";
-    }
-
-    public boolean isClicked(){
-
-        if(mouseX > corner1.x && mouseX < corner2.x
-            && mouseY >corner1.y &&  mouseY < corner2.y ){
-                return true;
-        } else {
-            return false;
-        }
-    }
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-// 
-// END OF UI ELEMENTS
-// 
-// START OF SPECIFIC SCREENS/ANIMATION OBJECTS
-// 
-
-
-
-
-
-
-
-
-
-
-class MainMenu extends Screen {
-    //config
-    private final static String uid = "MainMenu";
-    private PShape spaceship = loadShape("./spaceship.svg");;
-    private final PFont titleFont = createFont("Rajdhani-Regular.ttf", 96);
-    private final PVector buttonDimensions = new PVector(width / 25, width/25);
-    
-    private final int darksky = color(0, 0, 20);
-    private final int medSky = color(0, 75, 127);
-    private final int lightsky = color(7, 150, 255);
-    private final float percentDark = 0.7f;
-    
-    private Button btnVolume, btnTutorial;
-
-
-    public MainMenu(ScreenManager sm) { 
-        super(sm, MainMenu.uid);
-        spaceship.rotate(TAU * 7.0f/8.0f);
-
-        try {
-            btnVolume = new Button(new PVector(20, 20), buttonDimensions );
-            btnTutorial = new Button(new PVector(buttonDimensions.x + 40, 20 ), buttonDimensions);
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    public void display() {
-
-        //Background
-        noFill();
-        for (int i = 0; i <= height; i++) {
-            float inter = map(i, 0, height, 0, 1);
-            int c = lerpColor(darksky, medSky, inter);
-            stroke(c);
-            line(0, i, width, i);
-        }
-
-      
-        //clouds back
-
-        //spaceship
-        shape(spaceship, width/2 - ( sqrt(2 * sq(height/(3))) / 2) , height/2 + height/12, height/3, height/3);
-
-        //clouds front
-
-
-
-        //Title
-        noStroke();
-        fill(255);
-        textFont(titleFont,80);
-        textAlign(CENTER, CENTER);
-        text("Rocket", width / 2, height / 6);
-
-        //volume button
-        fill(255, 0, 0);
-        rect(btnVolume.corner1.x, btnVolume.corner1.y, buttonDimensions.x, buttonDimensions.y);
-
-        //tutorial button
-        fill(0, 255, 0);
-        rect(btnTutorial.corner1.x, btnTutorial.corner1.y, buttonDimensions.x, buttonDimensions.y);
-
-    }
-
-    public void onClick() {
-        if(btnTutorial.isClicked()) {
-            println("Tutorial got clicked");
-        } else if (btnVolume.isClicked()) {
-            println("Volume got clicked");
-        }
-    }
-
-    public void onType() {
-        if(keyCode == ENTER){
-          //  scrnMgr.setScreen("game");
-          println("Main menu recieved [ENTER]");
-        }
-    }
-}
   public void settings() {  size(960, 540); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "ProcessingIsBad" };
