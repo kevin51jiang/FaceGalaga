@@ -43,6 +43,7 @@ public void draw() {
     //     println("Screens included: "+Arrays.deepToString(sm.screens.values().toArray()));
     // }
 
+    
 } 
 
 public void mousePressed(){
@@ -91,6 +92,16 @@ abstract class Animatable {
     */
     public Animatable(PVector start, PVector dest, int time, AnimationQueue queue){
         this.current = start;
+        this.addAnimation(dest, time, queue);
+    }
+
+    /**
+    *   Made specifically for objects that start at the top and
+    *   go completely vertical down until they despawn.
+    */
+    public Animatable(int x, int y, int deltaY, int time, AnimationQueue queue) {
+        this.current = new PVector(x, y);
+        PVector dest = new PVector(x, y + deltaY);
         this.addAnimation(dest, time, queue);
     }
 
@@ -302,7 +313,7 @@ class MainMenu extends Screen {
     }
 }
 
-class Spaceship extends Animatable{
+class Spaceship extends Animatable {
 
     private static final int timePerAnim = 4000;
     private static final int mobilityX = 20, mobilityY = 35;
@@ -323,10 +334,20 @@ class Spaceship extends Animatable{
     public void display() {
         PVector temp = this.getCurrentPos();
 
+        if(frameCount % timeToFrames(250) == 0){
+            //MAYBE spawn clouds
+            if(random(100) < 65) { //25% every half second will spawn a cloud
+                Cloud c = new Cloud(2000, 8000, queue);
 
-        if(frameCount % 60 == 0) {
-            modifier = new PVector( random(3.0f) - 1.5f, random(3.0f) - 1.5f);
+                queue.add(c);
+            }
+            
+            if(frameCount % timeToFrames(1000) == 0) {
+                modifier = new PVector( random(3.0f) - 1.5f, random(3.0f) - 1.5f);
+            }
         }
+
+        
 
         //TODO: ALLOW ARROW KEYS TO CONTROL THE ROCKETSHIP'S ROTATION
         drawing.rotate(radians(random(0.25f)-0.125f));//rotate the rocketship a tiny bit each frame
@@ -353,6 +374,60 @@ class Spaceship extends Animatable{
             queue.add(this);
         }
     }
+}
+
+/**
+*   Great for randomly generating clouds that fly down. 
+*   Clouds are composed of a bunch of completely white circles thrown on top of each other
+*   And then are slightly transparent to produce that cloud feeling. --- MAYBE
+*   Will automatically despawn after reaching its destination (completely below the screen)
+*/ 
+class Cloud extends Animatable {
+
+    /**
+    *   Instructions stored like following: [circ1x, circ1y, circ1radius, circ2x, circ2y, ... , circnradius]
+    */
+    private int[] instructions;
+
+    private final static int sizeX = 150,
+                    sizeY = 75,
+                    minRad = 20,
+                    maxRad = 50;
+
+    public Cloud(int lowTime, int highTime, AnimationQueue queue) {
+        super(round(random(width)), -250, height + 500, round(random(lowTime, highTime)), queue);
+
+        instructions = new int[round(random(3, 10)) * 4];
+        generate();
+    }
+
+    public void display() {
+        PVector currentPos = this.getCurrentPos();
+        noStroke();
+        fill(0);
+        try{
+            for(int i = 0; i < instructions.length - 4; i += 4) {
+                fill(255);
+                ellipse(instructions[i] + currentPos.x, instructions[i + 1] + currentPos.y, instructions[i + 2], instructions[i + 3]);
+            }
+        } catch (Exception e) {
+            println("array thing for cloud messed up");
+        }
+        rect(currentPos.x, currentPos.y, 20, 20);
+
+        super.display();
+    }
+
+    public void generate(){
+        for(int i = 0; i < instructions.length - 3; i += 3) {
+            instructions[i] = round(random(sizeX));
+            instructions[i + 1] = round(random(sizeY));
+            instructions[i + 2] = round(random(minRad, maxRad));
+            instructions[i + 3] = round(random(minRad, maxRad));
+        }
+    }
+
+
 }
 /**
 * Generic Screen object. Handles all the internal logic / displaying by itself.

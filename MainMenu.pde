@@ -108,10 +108,12 @@ class Spaceship extends Animatable {
     public void display() {
         PVector temp = this.getCurrentPos();
 
-        if(frameCount % timeToFrames(500) == 0){
+        if(frameCount % timeToFrames(250) == 0){
             //MAYBE spawn clouds
-            if(random(100) < 25) { //25% every half second will spawn a cloud
-                AnimationQueue.add(new Cloud());
+            if(random(100) < 65) { //25% every half second will spawn a cloud
+                Cloud c = new Cloud(2000, 8000, queue);
+
+                queue.add(c);
             }
             
             if(frameCount % timeToFrames(1000) == 0) {
@@ -161,13 +163,43 @@ class Cloud extends Animatable {
     */
     private int[] instructions;
 
-    private static final PVector maxDimensions = new PVector(150, 75),
-                            PVector radiusDimensions = new PVector(20, );
-    
+    private final static int sizeX = 150,
+                    sizeY = 75,
+                    minRad = 20,
+                    maxRad = 50;
 
     public Cloud(int lowTime, int highTime, AnimationQueue queue) {
-        super(random(width), -250, random(lowTime, highTime), queue);
+        super(round(random(width)), -250, height + 500, round(random(lowTime, highTime)), queue);
 
-        instructions = new int[random(3, 10) * 3];
+        instructions = new int[round(random(3, 10)) * 4];
+        generate();
     }
+
+    public void display() {
+        PVector currentPos = this.getCurrentPos();
+        noStroke();
+        fill(0);
+        try{
+            for(int i = 0; i < instructions.length - 4; i += 4) {
+                fill(255);
+                ellipse(instructions[i] + currentPos.x, instructions[i + 1] + currentPos.y, instructions[i + 2], instructions[i + 3]);
+            }
+        } catch (Exception e) {
+            println("array thing for cloud messed up");
+        }
+        rect(currentPos.x, currentPos.y, 20, 20);
+
+        super.display();
+    }
+
+    public void generate(){
+        for(int i = 0; i < instructions.length - 3; i += 3) {
+            instructions[i] = round(random(sizeX));
+            instructions[i + 1] = round(random(sizeY));
+            instructions[i + 2] = round(random(minRad, maxRad));
+            instructions[i + 3] = round(random(minRad, maxRad));
+        }
+    }
+
+
 }
