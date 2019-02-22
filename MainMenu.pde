@@ -29,6 +29,10 @@ class MainMenu extends Screen {
         queue.add(spaceship);
     }
 
+    public void init() {
+        
+    }
+
     public void display() {
 
         //Background
@@ -42,13 +46,28 @@ class MainMenu extends Screen {
 
       
         //clouds back
+        if(frameCount != 0 && //prevent divide by zero errors
+            frameCount % timeToFrames(500) == 0){    //MAYBE spawn clouds
+            if(random(100) < 65) { //25% every half second will spawn a cloud
+                Cloud c = new Cloud(3000, 8000, queue);
 
+                queue.add(c);
+            }
+        }
 
         //spaceship display
         queue.display();
 
 
         //clouds front
+        if(frameCount != 0 &&
+            frameCount % timeToFrames(250) == 0){    //MAYBE spawn clouds
+            if(random(100) < 65) { //25% every half second will spawn a cloud
+                Cloud c = new Cloud(3000, 8000, queue);
+
+                queue.add(c);
+            }
+        }
 
 
 
@@ -82,7 +101,9 @@ class MainMenu extends Screen {
     public void onType() {
         if(keyCode == ENTER){
           //  scrnMgr.setScreen("game");
-          println("Main menu recieved [ENTER]");
+        //   println("Main menu recieved [ENTER]");
+            this.getScreenManager().setScreen("Game");
+
         }
     }
 }
@@ -97,7 +118,7 @@ class Spaceship extends Animatable {
     public Spaceship(AnimationQueue queue){
         super(new PVector(width / 2 - sqrt(2 * sq(height / 2.5)) / 2, height / 2 ), 
             new PVector(width / 2 - (sqrt(2 * sq(height / 2.5)) / 2) + (random(mobilityX) - mobilityX / 2), 
-                        height / 2 + random(mobilityY) - mobilityY / 2  ),
+                        height / 2 + random(mobilityY) - mobilityY / 2),
             timePerAnim,
             queue);
 
@@ -108,21 +129,10 @@ class Spaceship extends Animatable {
     public void display() {
         PVector temp = this.getCurrentPos();
 
-        if(frameCount % timeToFrames(250) == 0){
-            //MAYBE spawn clouds
-            if(random(100) < 65) { //25% every half second will spawn a cloud
-                Cloud c = new Cloud(2000, 8000, queue);
-
-                queue.add(c);
-            }
-            
-            if(frameCount % timeToFrames(1000) == 0) {
-                modifier = new PVector( random(3.0) - 1.5, random(3.0) - 1.5);
-            }
+        if(frameCount % timeToFrames(1000) == 0) {
+            modifier = new PVector( random(3.0) - 1.5, random(3.0) - 1.5);
         }
-
-        
-
+    
         //TODO: ALLOW ARROW KEYS TO CONTROL THE ROCKETSHIP'S ROTATION
         drawing.rotate(radians(random(0.25)-0.125));//rotate the rocketship a tiny bit each frame
         

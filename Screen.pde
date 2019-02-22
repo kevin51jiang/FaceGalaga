@@ -18,6 +18,8 @@ abstract class Screen {
 
     public abstract void onType();
 
+    public abstract void init();
+
     public void setManager(ScreenManager scrnMgr) {
         this.scrnMgr = scrnMgr;
     }
@@ -65,6 +67,10 @@ class ScreenManager {
     }
 
     public void display(){
+        // if(currentTransitionProcess == 0) { 
+        //     screens.get(currentScreenUid).init();
+        // }
+
         screens.get(currentScreenUid).display();
 
         if(currentTransitionProcess >= 0) {
@@ -72,7 +78,7 @@ class ScreenManager {
                 previousScreen.display();
             }
 
-            int percentAlpha = round( 255 * (-(1.0/frameRate / 2) * abs(currentTransitionProcess - frameRate / 2) + 1 )) ;
+            int percentAlpha = abs(round( 300 * (-(1.0/frameRate / 2) * abs(currentTransitionProcess - frameRate / 2) + 1 )) );
             if(percentAlpha > 255) percentAlpha = 255;// add on extra time when black is at max opacity
 
 
@@ -106,7 +112,7 @@ class ScreenManager {
         previousScreen = screens.get(currentScreenUid);
         
         this.currentScreenUid = screenUid;
-
+        screens.get(currentScreenUid).init();
         currentTransitionProcess = round(transitionTime * (1.0 / frameRate));
         transitionFrames = currentTransitionProcess;
         

@@ -75,7 +75,7 @@ abstract class Animatable {
 
         this.queue = queue;
 
-        println("added anim: " + start.x + ", " + start.y + " - " + dest.x + ", " + dest.y);
+        // println("added anim: " + start.x + ", " + start.y + " - " + dest.x + ", " + dest.y);
     }
 
     public void addDeltaAnimation(PVector delta, int time, AnimationQueue queue){

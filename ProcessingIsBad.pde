@@ -1,6 +1,7 @@
+import gab.opencv.*;
+
 import java.util.*;
 import processing.video.*;
-import gab.opencv.*;
 
 ScreenManager sm;
 
@@ -8,11 +9,11 @@ final int opencvRefreshes = 4; //number of times opencv tries to detect faces pe
                                 // intentionally can skip some frames to increase the performance of the game
 
 void setup() {
-
     frameRate(60);
     size(960, 540);
     sm = new ScreenManager();
     sm.init(new MainMenu(sm));
+    sm.add(new Game(sm, this));
     stroke(0);
 }
 

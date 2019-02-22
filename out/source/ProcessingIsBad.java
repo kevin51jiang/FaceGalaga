@@ -3,9 +3,12 @@ import processing.data.*;
 import processing.event.*; 
 import processing.opengl.*; 
 
+import gab.opencv.*; 
 import java.util.*; 
 import processing.video.*; 
 import gab.opencv.*; 
+import processing.video.*; 
+import java.awt.*; 
 
 import java.util.HashMap; 
 import java.util.ArrayList; 
@@ -22,17 +25,18 @@ public class ProcessingIsBad extends PApplet {
 
 
 
+
 ScreenManager sm;
 
 final int opencvRefreshes = 4; //number of times opencv tries to detect faces per second
                                 // intentionally can skip some frames to increase the performance of the game
 
 public void setup() {
-
     frameRate(60);
     
     sm = new ScreenManager();
     sm.init(new MainMenu(sm));
+    sm.add(new Game(sm, this));
     stroke(0);
 }
 
@@ -135,7 +139,7 @@ abstract class Animatable {
 
         this.queue = queue;
 
-        println("added anim: " + start.x + ", " + start.y + " - " + dest.x + ", " + dest.y);
+        // println("added anim: " + start.x + ", " + start.y + " - " + dest.x + ", " + dest.y);
     }
 
     public void addDeltaAnimation(PVector delta, int time, AnimationQueue queue){
@@ -225,6 +229,89 @@ class Button {
 
 }
 
+
+
+
+class Game extends Screen {
+    PApplet gameObject;
+    Capture video;
+    OpenCV opencv;
+
+    int hitbox = 25;
+
+    String accum = "";
+    int prevx = 0, prevy = 0;
+
+    private static final String uid = "Game";
+    private boolean haha = false;
+
+
+    public Game (ScreenManager sm, PApplet gameObject) {
+        super(sm, Game.uid);
+        this.gameObject = gameObject;
+    }
+
+    public void init() {
+        println("Lowering framerate");
+        frameRate(10);
+        println("Initializing Webcam and OpenCV... ");
+        video = new Capture(gameObject, 640/2, 480/2);
+        opencv = new OpenCV(gameObject, 640/2, 480/2);
+        println("Loading the Haar Cascade...");
+        opencv.loadCascade("haarcascade_frontalface_alt.xml", true);  
+        println("Starting video... ");
+        video.start();
+    }
+
+    
+    public void display() {
+        
+        image(video, 0, 0 );
+        scale(-2, 2);
+        opencv.loadImage(video);
+        noFill();
+        stroke(0, 255, 0);
+        strokeWeight(3);
+        Rectangle[] faces = opencv.detect();
+        println(faces.length);
+
+
+        if(faces.length == 0) {
+            rect(prevx, prevy, hitbox, hitbox);
+        } else {
+            
+            for (int i = 0; i < faces.length; i++) {
+                println(faces[i].x + "," + faces[i].y);
+                stroke(0,255,0);
+                rect(-faces[i].x, faces[i].y, faces[i].width, faces[i].height);
+                //let's say ship has hitbox of 100x100
+                stroke(255,0 ,0 );
+                prevx =faces[i].x + faces[i].width/2 - hitbox/2;
+                prevy =  faces[i].y + faces[i].height/2 - hitbox/2;
+                rect(-prevx, prevy, hitbox, hitbox);
+                
+            }
+
+        }
+        text(hitbox, 20, 20);
+    }
+
+
+    public void captureEvent(Capture c) {
+        c.read();
+    }
+
+
+    public void onClick(){
+
+    }
+
+    public void onType(){
+        this.getScreenManager().setScreen("MainMenu");
+    }
+    
+}
+
 class MainMenu extends Screen {
     //config
     private final static String uid = "MainMenu";
@@ -255,6 +342,10 @@ class MainMenu extends Screen {
         queue.add(spaceship);
     }
 
+    public void init() {
+        
+    }
+
     public void display() {
 
         //Background
@@ -268,13 +359,28 @@ class MainMenu extends Screen {
 
       
         //clouds back
+        if(frameCount != 0 && //prevent divide by zero errors
+            frameCount % timeToFrames(500) == 0){    //MAYBE spawn clouds
+            if(random(100) < 65) { //25% every half second will spawn a cloud
+                Cloud c = new Cloud(3000, 8000, queue);
 
+                queue.add(c);
+            }
+        }
 
         //spaceship display
         queue.display();
 
 
         //clouds front
+        if(frameCount != 0 &&
+            frameCount % timeToFrames(250) == 0){    //MAYBE spawn clouds
+            if(random(100) < 65) { //25% every half second will spawn a cloud
+                Cloud c = new Cloud(3000, 8000, queue);
+
+                queue.add(c);
+            }
+        }
 
 
 
@@ -308,7 +414,9 @@ class MainMenu extends Screen {
     public void onType() {
         if(keyCode == ENTER){
           //  scrnMgr.setScreen("game");
-          println("Main menu recieved [ENTER]");
+        //   println("Main menu recieved [ENTER]");
+            this.getScreenManager().setScreen("Game");
+
         }
     }
 }
@@ -323,7 +431,7 @@ class Spaceship extends Animatable {
     public Spaceship(AnimationQueue queue){
         super(new PVector(width / 2 - sqrt(2 * sq(height / 2.5f)) / 2, height / 2 ), 
             new PVector(width / 2 - (sqrt(2 * sq(height / 2.5f)) / 2) + (random(mobilityX) - mobilityX / 2), 
-                        height / 2 + random(mobilityY) - mobilityY / 2  ),
+                        height / 2 + random(mobilityY) - mobilityY / 2),
             timePerAnim,
             queue);
 
@@ -334,21 +442,10 @@ class Spaceship extends Animatable {
     public void display() {
         PVector temp = this.getCurrentPos();
 
-        if(frameCount % timeToFrames(250) == 0){
-            //MAYBE spawn clouds
-            if(random(100) < 65) { //25% every half second will spawn a cloud
-                Cloud c = new Cloud(2000, 8000, queue);
-
-                queue.add(c);
-            }
-            
-            if(frameCount % timeToFrames(1000) == 0) {
-                modifier = new PVector( random(3.0f) - 1.5f, random(3.0f) - 1.5f);
-            }
+        if(frameCount % timeToFrames(1000) == 0) {
+            modifier = new PVector( random(3.0f) - 1.5f, random(3.0f) - 1.5f);
         }
-
-        
-
+    
         //TODO: ALLOW ARROW KEYS TO CONTROL THE ROCKETSHIP'S ROTATION
         drawing.rotate(radians(random(0.25f)-0.125f));//rotate the rocketship a tiny bit each frame
         
@@ -449,6 +546,8 @@ abstract class Screen {
 
     public abstract void onType();
 
+    public abstract void init();
+
     public void setManager(ScreenManager scrnMgr) {
         this.scrnMgr = scrnMgr;
     }
@@ -496,6 +595,10 @@ class ScreenManager {
     }
 
     public void display(){
+        // if(currentTransitionProcess == 0) { 
+        //     screens.get(currentScreenUid).init();
+        // }
+
         screens.get(currentScreenUid).display();
 
         if(currentTransitionProcess >= 0) {
@@ -503,7 +606,7 @@ class ScreenManager {
                 previousScreen.display();
             }
 
-            int percentAlpha = round( 255 * (-(1.0f/frameRate / 2) * abs(currentTransitionProcess - frameRate / 2) + 1 )) ;
+            int percentAlpha = abs(round( 300 * (-(1.0f/frameRate / 2) * abs(currentTransitionProcess - frameRate / 2) + 1 )) );
             if(percentAlpha > 255) percentAlpha = 255;// add on extra time when black is at max opacity
 
 
@@ -537,7 +640,7 @@ class ScreenManager {
         previousScreen = screens.get(currentScreenUid);
         
         this.currentScreenUid = screenUid;
-
+        screens.get(currentScreenUid).init();
         currentTransitionProcess = round(transitionTime * (1.0f / frameRate));
         transitionFrames = currentTransitionProcess;
         
