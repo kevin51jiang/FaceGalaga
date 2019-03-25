@@ -11,6 +11,7 @@ final int opencvRefreshes = 4; //number of times opencv tries to detect faces pe
 void setup() {
     frameRate(60);
     size(960, 540);
+    ortho();
     sm = new ScreenManager();
     sm.init(new MainMenu(sm));
     sm.add(new Game(sm, this));

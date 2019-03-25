@@ -35,9 +35,9 @@ class Game extends Screen {
 
     
     void display() {
-        
+
         image(video, 0, 0 );
-        scale(-2, 2);
+        scale(2, 2);
         opencv.loadImage(video);
         noFill();
         stroke(0, 255, 0);
@@ -53,12 +53,12 @@ class Game extends Screen {
             for (int i = 0; i < faces.length; i++) {
                 println(faces[i].x + "," + faces[i].y);
                 stroke(0,255,0);
-                rect(-faces[i].x, faces[i].y, faces[i].width, faces[i].height);
+                rect(faces[i].x, faces[i].y, faces[i].width, faces[i].height);
                 //let's say ship has hitbox of 100x100
                 stroke(255,0 ,0 );
                 prevx =faces[i].x + faces[i].width/2 - hitbox/2;
                 prevy =  faces[i].y + faces[i].height/2 - hitbox/2;
-                rect(-prevx, prevy, hitbox, hitbox);
+                rect(prevx, prevy, hitbox, hitbox);
                 
             }
 

@@ -34,6 +34,7 @@ final int opencvRefreshes = 4; //number of times opencv tries to detect faces pe
 public void setup() {
     frameRate(60);
     
+    ortho();
     sm = new ScreenManager();
     sm.init(new MainMenu(sm));
     sm.add(new Game(sm, this));
@@ -61,26 +62,6 @@ public void keyPressed() {
 
 public int timeToFrames(int time) {
     return round(frameRate / 1000.0f * time);
-}
-
-class AnimationQueue {
-    private ArrayList<Animatable> currentAnimations = new ArrayList<Animatable>();
-    public AnimationQueue() {}
-
-    public void add(Animatable anim){
-        currentAnimations.add(anim);
-    }
-
-    public void remove(Animatable anim){
-        currentAnimations.remove(anim);
-    }
-
-    public void display() {
-        for(int i = 0; i < currentAnimations.size(); i++){
-            currentAnimations.get(i).display();
-        }
-    }
-
 }
 
 /**
@@ -177,6 +158,30 @@ abstract class Animatable {
 
 
 
+/**
+*   Animation Manager in the form of a queue
+*/
+class AnimationQueue {
+    private ArrayList<Animatable> currentAnimations = new ArrayList<Animatable>();
+    public AnimationQueue() {}
+
+    public void add(Animatable anim){
+        currentAnimations.add(anim);
+    }
+
+    public void remove(Animatable anim){
+        currentAnimations.remove(anim);
+    }
+
+    public void display() {
+        for(int i = currentAnimations.size() - 1; i >= 0; i--){
+            currentAnimations.get(i).display();
+        }
+
+    
+    }
+
+}
 
 
 class Button {
@@ -229,6 +234,61 @@ class Button {
 
 }
 
+/**
+*   Great for randomly generating clouds that fly down. 
+*   Clouds are composed of a bunch of completely white circles thrown on top of each other
+*   And then are slightly transparent to produce that cloud feeling. --- MAYBE
+*   Will automatically despawn after reaching its destination (completely below the screen)
+*/ 
+class Cloud extends Animatable {
+
+    /**
+    *   Instructions stored like following: [circ1x, circ1y, circ1radius, circ2x, circ2y, ... , circnradius]
+    */
+    private int[] instructions;
+
+    private final static int sizeX = 150,
+                    sizeY = 75,
+                    minRad = 20,
+                    maxRad = 50;
+
+    public Cloud(int lowTime, int highTime, AnimationQueue queue) {
+        super(round(random(width)), -250, height + 500, round(random(lowTime, highTime)), queue);
+
+        instructions = new int[round(random(3, 10)) * 4];
+        generate();
+    }
+
+    public void display() {
+        PVector currentPos = this.getCurrentPos();
+        noStroke();
+        fill(0);
+        try{
+            for(int i = 0; i < instructions.length - 4; i += 4) {
+                
+                fill(230); //cloud color
+                ellipse(instructions[i] + currentPos.x, instructions[i + 1] + currentPos.y, instructions[i + 2], instructions[i + 3]);
+            }
+        } catch (Exception e) {
+            println("array thing for cloud messed up");
+        }
+        rect(currentPos.x, currentPos.y, 20, 20);
+
+        super.display();
+    }
+
+    public void generate(){
+        for(int i = 0; i < instructions.length - 3; i += 3) {
+            instructions[i] = round(random(sizeX));
+            instructions[i + 1] = round(random(sizeY));
+            instructions[i + 2] = round(random(minRad, maxRad));
+            instructions[i + 3] = round(random(minRad, maxRad));
+        }
+    }
+
+
+}
+
 
 
 
@@ -265,9 +325,9 @@ class Game extends Screen {
 
     
     public void display() {
-        
+
         image(video, 0, 0 );
-        scale(-2, 2);
+        scale(2, 2);
         opencv.loadImage(video);
         noFill();
         stroke(0, 255, 0);
@@ -283,12 +343,12 @@ class Game extends Screen {
             for (int i = 0; i < faces.length; i++) {
                 println(faces[i].x + "," + faces[i].y);
                 stroke(0,255,0);
-                rect(-faces[i].x, faces[i].y, faces[i].width, faces[i].height);
+                rect(faces[i].x, faces[i].y, faces[i].width, faces[i].height);
                 //let's say ship has hitbox of 100x100
                 stroke(255,0 ,0 );
                 prevx =faces[i].x + faces[i].width/2 - hitbox/2;
                 prevy =  faces[i].y + faces[i].height/2 - hitbox/2;
-                rect(-prevx, prevy, hitbox, hitbox);
+                rect(prevx, prevy, hitbox, hitbox);
                 
             }
 
@@ -311,7 +371,9 @@ class Game extends Screen {
     }
     
 }
-
+/**
+*   Everything that has to do with the main menu
+*/
 class MainMenu extends Screen {
     //config
     private final static String uid = "MainMenu";
@@ -347,59 +409,60 @@ class MainMenu extends Screen {
     }
 
     public void display() {
-
-        //Background
-        noFill();
-        for (int i = 0; i <= height; i++) {
-            float inter = map(i, 0, height, 0, 1);
-            int c = lerpColor(darksky, medSky, inter);
-            stroke(c);
-            line(0, i, width, i);
-        }
-
-      
-        //clouds back
-        if(frameCount != 0 && //prevent divide by zero errors
-            frameCount % timeToFrames(500) == 0){    //MAYBE spawn clouds
-            if(random(100) < 65) { //25% every half second will spawn a cloud
-                Cloud c = new Cloud(3000, 8000, queue);
-
-                queue.add(c);
+        //println("Framecount: " + frameCount);
+        if(frameCount != 0 ) {
+            //Background
+            noFill();
+            for (int i = 0; i <= height; i++) {
+                float inter = map(i, 0, height, 0, 1);
+                int c = lerpColor(darksky, medSky, inter);
+                stroke(c);
+                line(0, i, width, i);
             }
-        }
 
-        //spaceship display
-        queue.display();
+        
+            //clouds back
+            if(frameCount != 0 && //prevent divide by zero errors
+                frameCount % timeToFrames(500) == 0){    //MAYBE spawn clouds
+                if(random(100) < 65) { //25% every half second will spawn a cloud
+                    Cloud c = new Cloud(3000, 8000, queue);
 
-
-        //clouds front
-        if(frameCount != 0 &&
-            frameCount % timeToFrames(250) == 0){    //MAYBE spawn clouds
-            if(random(100) < 65) { //25% every half second will spawn a cloud
-                Cloud c = new Cloud(3000, 8000, queue);
-
-                queue.add(c);
+                    queue.add(c);
+                }
             }
+
+            //spaceship display
+            queue.display();
+
+
+            //clouds front
+            if(frameCount != 0 &&
+                frameCount % timeToFrames(250) == 0){    //MAYBE spawn clouds
+                if(random(100) < 65) { //25% every half second will spawn a cloud
+                    Cloud c = new Cloud(3000, 8000, queue);
+
+                    queue.add(c);
+                }
+            }
+
+
+
+
+            //Title
+            noStroke();
+            fill(255);
+            textFont(titleFont,80);
+            textAlign(CENTER, CENTER);
+            text("Rocket", width / 2, height / 6);
+
+            //volume button
+            fill(255, 0, 0);
+            rect(btnVolume.corner1.x, btnVolume.corner1.y, buttonDimensions.x, buttonDimensions.y);
+
+            //tutorial button
+            fill(0, 255, 0);
+            rect(btnTutorial.corner1.x, btnTutorial.corner1.y, buttonDimensions.x, buttonDimensions.y);
         }
-
-
-
-
-        //Title
-        noStroke();
-        fill(255);
-        textFont(titleFont,80);
-        textAlign(CENTER, CENTER);
-        text("Rocket", width / 2, height / 6);
-
-        //volume button
-        fill(255, 0, 0);
-        rect(btnVolume.corner1.x, btnVolume.corner1.y, buttonDimensions.x, buttonDimensions.y);
-
-        //tutorial button
-        fill(0, 255, 0);
-        rect(btnTutorial.corner1.x, btnTutorial.corner1.y, buttonDimensions.x, buttonDimensions.y);
-
 
     }
 
@@ -419,112 +482,6 @@ class MainMenu extends Screen {
 
         }
     }
-}
-
-class Spaceship extends Animatable {
-
-    private static final int timePerAnim = 4000;
-    private static final int mobilityX = 20, mobilityY = 35;
-    private PShape drawing = loadShape("./spaceship.svg");
-    private PVector modifier = new PVector(0, 0);
-    
-    public Spaceship(AnimationQueue queue){
-        super(new PVector(width / 2 - sqrt(2 * sq(height / 2.5f)) / 2, height / 2 ), 
-            new PVector(width / 2 - (sqrt(2 * sq(height / 2.5f)) / 2) + (random(mobilityX) - mobilityX / 2), 
-                        height / 2 + random(mobilityY) - mobilityY / 2),
-            timePerAnim,
-            queue);
-
-        imageMode(CENTER);
-        drawing.rotate(TAU * 7.0f/8.0f);
-    }
-
-    public void display() {
-        PVector temp = this.getCurrentPos();
-
-        if(frameCount % timeToFrames(1000) == 0) {
-            modifier = new PVector( random(3.0f) - 1.5f, random(3.0f) - 1.5f);
-        }
-    
-        //TODO: ALLOW ARROW KEYS TO CONTROL THE ROCKETSHIP'S ROTATION
-        drawing.rotate(radians(random(0.25f)-0.125f));//rotate the rocketship a tiny bit each frame
-        
-        shape(drawing, temp.x + modifier.x, temp.y + modifier.y, height / 2.5f, height / 2.5f);//tiny little movements to simulate how a rocket is unstable
-        
-        pushStyle();
-            stroke(5);
-            fill(255,255,0);
-            point(temp.x + modifier.x, temp.y + modifier.y);//DEBUG
-            rect(temp.x + modifier.x, temp.y + modifier.y, 3, 3);
-        popStyle();
-        
-        super.display();//cleanup
-
-        //tries to add itself back with a new animation
-        if(!this.isInAnimation()) {
-            // this.addAnimation(new PVector(width / 2 + random(mobilityX) - mobilityX / 2, height / 2 + random(mobilitY) - mobilitY / 2 ),
-            //                 timePerAnim,
-            //                 queue);
-            this.addDeltaAnimation(new PVector(random(mobilityX) - mobilityX / 2, random(mobilityY) - mobilityY / 2),
-                                timePerAnim,
-                                queue);
-            queue.add(this);
-        }
-    }
-}
-
-/**
-*   Great for randomly generating clouds that fly down. 
-*   Clouds are composed of a bunch of completely white circles thrown on top of each other
-*   And then are slightly transparent to produce that cloud feeling. --- MAYBE
-*   Will automatically despawn after reaching its destination (completely below the screen)
-*/ 
-class Cloud extends Animatable {
-
-    /**
-    *   Instructions stored like following: [circ1x, circ1y, circ1radius, circ2x, circ2y, ... , circnradius]
-    */
-    private int[] instructions;
-
-    private final static int sizeX = 150,
-                    sizeY = 75,
-                    minRad = 20,
-                    maxRad = 50;
-
-    public Cloud(int lowTime, int highTime, AnimationQueue queue) {
-        super(round(random(width)), -250, height + 500, round(random(lowTime, highTime)), queue);
-
-        instructions = new int[round(random(3, 10)) * 4];
-        generate();
-    }
-
-    public void display() {
-        PVector currentPos = this.getCurrentPos();
-        noStroke();
-        fill(0);
-        try{
-            for(int i = 0; i < instructions.length - 4; i += 4) {
-                fill(255);
-                ellipse(instructions[i] + currentPos.x, instructions[i + 1] + currentPos.y, instructions[i + 2], instructions[i + 3]);
-            }
-        } catch (Exception e) {
-            println("array thing for cloud messed up");
-        }
-        rect(currentPos.x, currentPos.y, 20, 20);
-
-        super.display();
-    }
-
-    public void generate(){
-        for(int i = 0; i < instructions.length - 3; i += 3) {
-            instructions[i] = round(random(sizeX));
-            instructions[i + 1] = round(random(sizeY));
-            instructions[i + 2] = round(random(minRad, maxRad));
-            instructions[i + 3] = round(random(minRad, maxRad));
-        }
-    }
-
-
 }
 /**
 * Generic Screen object. Handles all the internal logic / displaying by itself.
@@ -567,9 +524,7 @@ class ScreenManager {
     public String currentScreenUid;
     private Screen previousScreen;
 
-    final int transitionTime = 2000 * 2;//total time for transition/fade to black thing in milliseconds
-    int currentTransitionProcess = -1; //How far it's into the transition. -1 shows that it's not currently in a transition.
-    int transitionFrames = -1;
+    boolean isInTransition = false;
 
     private boolean isMute = false;
 
@@ -583,13 +538,13 @@ class ScreenManager {
     public void onClick() {
         
         //will block any clicks that happen during transitions/loading time.
-        if(currentTransitionProcess == -1) { 
+        if(!isInTransition) { 
             screens.get(currentScreenUid).onClick();
         }
     }
 
     public void onType() {
-        if(currentTransitionProcess == -1) {
+        if(!isInTransition) {
             screens.get(currentScreenUid).onType();
         }
     }
@@ -601,20 +556,20 @@ class ScreenManager {
 
         screens.get(currentScreenUid).display();
 
-        if(currentTransitionProcess >= 0) {
-            if(currentTransitionProcess > transitionFrames / 2){
-                previousScreen.display();
-            }
+        // if(currentTransitionProcess >= 0) {
+        //     if(currentTransitionProcess > transitionFrames / 2){
+        //         previousScreen.display();
+        //     }
 
-            int percentAlpha = abs(round( 300 * (-(1.0f/frameRate / 2) * abs(currentTransitionProcess - frameRate / 2) + 1 )) );
-            if(percentAlpha > 255) percentAlpha = 255;// add on extra time when black is at max opacity
+        //     int percentAlpha = abs(round( 300 * (-(1.0/frameRate / 2) * abs(currentTransitionProcess - frameRate / 2) + 1 )) );
+        //     if(percentAlpha > 255) percentAlpha = 255;// add on extra time when black is at max opacity
 
 
-            println("percentAlpha + currentTransitionProcess : "+percentAlpha + " " + currentTransitionProcess);
-            fill(0, 0 , 0, percentAlpha);
-            rect(0, 0, width, height);
-            --currentTransitionProcess;
-        }
+        //     println("percentAlpha + currentTransitionProcess : "+percentAlpha + " " + currentTransitionProcess);
+        //     fill(0, 0 , 0, percentAlpha);
+        //     rect(0, 0, width, height);
+        //     --currentTransitionProcess;
+        // }
         
     }
 
@@ -640,9 +595,16 @@ class ScreenManager {
         previousScreen = screens.get(currentScreenUid);
         
         this.currentScreenUid = screenUid;
-        screens.get(currentScreenUid).init();
-        currentTransitionProcess = round(transitionTime * (1.0f / frameRate));
-        transitionFrames = currentTransitionProcess;
+
+        pushMatrix();
+        fill(0);
+        rect(0, 0, width, height); //set screen to black
+        popMatrix();
+         
+        isInTransition = true;
+        screens.get(currentScreenUid).init();// load new screen
+        isInTransition = false;
+        
         
     }
 
@@ -661,16 +623,66 @@ class ScreenManager {
     }
 
     public String toString() {
-        boolean isInTransition = false;
-        if(currentTransitionProcess > -1 ){
-            isInTransition = true;
-        }
+  
         return "ScreenManager: " + Arrays.deepToString(screens.values().toArray()) + "Transition?: " + isInTransition;
     }
 
 }
 
 
+
+class Spaceship extends Animatable {
+
+    private static final int timePerAnim = 4000;
+    private static final int mobilityX = 20, mobilityY = 35;
+    private PShape drawing = loadShape("./spaceship.svg");
+    private PVector modifier = new PVector(0, 0);
+    
+    public Spaceship(AnimationQueue queue){
+        super(new PVector(width / 2 - sqrt(2 * sq(height / 2.5f)) / 2, height / 2 ), 
+            new PVector(width / 2 - (sqrt(2 * sq(height / 2.5f)) / 2) + (random(mobilityX) - mobilityX / 2), 
+                        height / 2 + random(mobilityY) - mobilityY / 2),
+            timePerAnim,
+            queue);
+
+        imageMode(CENTER);
+      //  drawing.rotateZ(TAU * 7.0/8.0);
+    }
+
+    public void display() {
+        PVector temp = this.getCurrentPos();
+
+        if(frameCount % timeToFrames(1000) == 0) {
+            modifier = new PVector( random(3.0f) - 1.5f, random(3.0f) - 1.5f);
+        }
+    
+        //TODO: ALLOW ARROW KEYS TO CONTROL THE ROCKETSHIP'S ROTATION
+        // drawing.rotate(radians(random(0.25)-0.125));//rotate the rocketship a tiny bit each frame
+        
+        shape(drawing, temp.x + modifier.x, temp.y + modifier.y, height / 2.5f, height / 2.5f);//tiny little movements to simulate how a rocket is unstable
+        
+        // FOR DEBUG
+        // pushStyle(); 
+        //     stroke(5);
+        //     fill(255,255,0);
+        //     point(temp.x + modifier.x, temp.y + modifier.y);//DEBUG
+        //     rect(temp.x + modifier.x, temp.y + modifier.y, 3, 3);
+        // popStyle();
+        
+        super.display();//cleanup
+
+        //tries to add itself back with a new animation
+        if(!this.isInAnimation()) {
+            // this.addAnimation(new PVector(width / 2 + random(mobilityX) - mobilityX / 2, height / 2 + random(mobilitY) - mobilitY / 2 ),
+            //                 timePerAnim,
+            //                 queue);
+            this.addDeltaAnimation(new PVector(random(mobilityX) - mobilityX / 2, random(mobilityY) - mobilityY / 2),
+                                timePerAnim,
+                                queue);
+            queue.add(this);
+        }
+    }
+}
   public void settings() {  size(960, 540); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "ProcessingIsBad" };

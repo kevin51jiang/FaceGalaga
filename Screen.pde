@@ -39,9 +39,7 @@ class ScreenManager {
     public String currentScreenUid;
     private Screen previousScreen;
 
-    final int transitionTime = 2000 * 2;//total time for transition/fade to black thing in milliseconds
-    int currentTransitionProcess = -1; //How far it's into the transition. -1 shows that it's not currently in a transition.
-    int transitionFrames = -1;
+    boolean isInTransition = false;
 
     private boolean isMute = false;
 
@@ -55,13 +53,13 @@ class ScreenManager {
     public void onClick() {
         
         //will block any clicks that happen during transitions/loading time.
-        if(currentTransitionProcess == -1) { 
+        if(!isInTransition) { 
             screens.get(currentScreenUid).onClick();
         }
     }
 
     public void onType() {
-        if(currentTransitionProcess == -1) {
+        if(!isInTransition) {
             screens.get(currentScreenUid).onType();
         }
     }
@@ -73,20 +71,20 @@ class ScreenManager {
 
         screens.get(currentScreenUid).display();
 
-        if(currentTransitionProcess >= 0) {
-            if(currentTransitionProcess > transitionFrames / 2){
-                previousScreen.display();
-            }
+        // if(currentTransitionProcess >= 0) {
+        //     if(currentTransitionProcess > transitionFrames / 2){
+        //         previousScreen.display();
+        //     }
 
-            int percentAlpha = abs(round( 300 * (-(1.0/frameRate / 2) * abs(currentTransitionProcess - frameRate / 2) + 1 )) );
-            if(percentAlpha > 255) percentAlpha = 255;// add on extra time when black is at max opacity
+        //     int percentAlpha = abs(round( 300 * (-(1.0/frameRate / 2) * abs(currentTransitionProcess - frameRate / 2) + 1 )) );
+        //     if(percentAlpha > 255) percentAlpha = 255;// add on extra time when black is at max opacity
 
 
-            println("percentAlpha + currentTransitionProcess : "+percentAlpha + " " + currentTransitionProcess);
-            fill(0, 0 , 0, percentAlpha);
-            rect(0, 0, width, height);
-            --currentTransitionProcess;
-        }
+        //     println("percentAlpha + currentTransitionProcess : "+percentAlpha + " " + currentTransitionProcess);
+        //     fill(0, 0 , 0, percentAlpha);
+        //     rect(0, 0, width, height);
+        //     --currentTransitionProcess;
+        // }
         
     }
 
@@ -112,9 +110,16 @@ class ScreenManager {
         previousScreen = screens.get(currentScreenUid);
         
         this.currentScreenUid = screenUid;
-        screens.get(currentScreenUid).init();
-        currentTransitionProcess = round(transitionTime * (1.0 / frameRate));
-        transitionFrames = currentTransitionProcess;
+
+        pushMatrix();
+        fill(0);
+        rect(0, 0, width, height); //set screen to black
+        popMatrix();
+         
+        isInTransition = true;
+        screens.get(currentScreenUid).init();// load new screen
+        isInTransition = false;
+        
         
     }
 
@@ -133,10 +138,7 @@ class ScreenManager {
     }
 
     public String toString() {
-        boolean isInTransition = false;
-        if(currentTransitionProcess > -1 ){
-            isInTransition = true;
-        }
+  
         return "ScreenManager: " + Arrays.deepToString(screens.values().toArray()) + "Transition?: " + isInTransition;
     }
 
