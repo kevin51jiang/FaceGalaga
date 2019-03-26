@@ -4,7 +4,6 @@
 class MainMenu extends Screen {
     //config
     private final static String uid = "MainMenu";
-    // private PShape spaceship = loadShape("./spaceship.svg");;
     private final PFont titleFont = createFont("Rajdhani-Regular.ttf", 96);
     private final PVector buttonDimensions = new PVector(width / 25, width/25);
     
@@ -81,9 +80,6 @@ class MainMenu extends Screen {
                 }
             }
 
-
-
-
             //Title
             noStroke();
             fill(255);
@@ -118,8 +114,6 @@ class MainMenu extends Screen {
     */
     public void onType() {
         if(keyCode == ENTER){
-          //  scrnMgr.setScreen("game");
-        //   println("Main menu recieved [ENTER]");
             this.getScreenManager().setScreen("Game");
 
         }
