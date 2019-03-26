@@ -41,7 +41,12 @@ class Cloud extends Animatable {
 
         super.display();
     }
-
+    
+    /**
+    * Generate a new cloud. 
+    * Needs changing to make the cloud shapes more natural/all the cloud pieces actually contact each other.
+    * Otherwise, consider also switching it out for using pregenerated images.
+    */
     public void generate(){
         for(int i = 0; i < instructions.length - 3; i += 3) {
             instructions[i] = round(random(sizeX));

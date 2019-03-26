@@ -46,6 +46,9 @@ abstract class Animatable {
         }
     }
 
+    /**
+    * Adds an animation to an absolute coordinate. e.g. move to (0,1)
+    */
     public void addAnimation(PVector dest, int time, AnimationQueue queue){
         this.start = current;
         this.dest = dest;
@@ -58,6 +61,9 @@ abstract class Animatable {
         // println("added anim: " + start.x + ", " + start.y + " - " + dest.x + ", " + dest.y);
     }
 
+    /**
+    * Ads a delta animation. e.g. move 3 to the right, 5 up.
+    */
     public void addDeltaAnimation(PVector delta, int time, AnimationQueue queue){
         this.start = current;
         this.dest = new PVector(current.x + delta.x, current.y + delta.y);
@@ -71,8 +77,9 @@ abstract class Animatable {
 
     }
 
-    /*
-    *   If ever implement a bezier ease in/out system, this is the method that needs changing.
+    /**
+    * If ever implement a bezier ease in/out system, this is the method that needs changing.
+    * Currently uses linear interpolation so it jerks around a bit.
     */
     public PVector getCurrentPos() {
 
@@ -81,7 +88,11 @@ abstract class Animatable {
         //println("Current pos: " + current.x + ", " + current.y + " lerp%= " + framesLeft/framesMax * 100);
         return current;
     }
-        
+
+    /**
+    * Checks if this object is currently in the middle of an animation (is moving).
+    * Returns true if it's in an animation, false if it's not.
+    */ 
     public boolean isInAnimation() {
         return framesLeft > 0;
     }

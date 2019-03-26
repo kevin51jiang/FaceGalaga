@@ -21,26 +21,35 @@ class MainMenu extends Screen {
         super(sm, MainMenu.uid);
 
         try {
+            // Instantiate the volume button
             btnVolume = new Button(new PVector(20, 20), buttonDimensions );
+            
+            //Instantiate the tutorial/help button
             btnTutorial = new Button(new PVector(buttonDimensions.x + 40, 20 ), buttonDimensions);
         } catch (Exception e){
             e.printStackTrace();
         }
+
+        //instantiate the spaceship
         spaceship = new Spaceship(queue);
-        
+        //add the spaceship to the animation queue
         queue.add(spaceship);
     }
 
+    /*
+    * The MainMenu doesn't need anything to be initalized before displaying it.
+    */
     public void init() {
         
     }
 
     public void display() {
-        //println("Framecount: " + frameCount);
+        // skip the first frame (frameCount == 0) to prevent divide by zero errors
         if(frameCount != 0 ) {
             //Background
             noFill();
-            for (int i = 0; i <= height; i++) {
+            //draw the background gradient using linear interpolation
+            for (int i = 0; i <= height; i++) { 
                 float inter = map(i, 0, height, 0, 1);
                 color c = lerpColor(darksky, medSky, inter);
                 stroke(c);
@@ -48,7 +57,7 @@ class MainMenu extends Screen {
             }
 
         
-            //clouds back
+            //clouds back (set the Z value to behind the spaceship)
             if(frameCount != 0 && //prevent divide by zero errors
                 frameCount % timeToFrames(500) == 0){    //MAYBE spawn clouds
                 if(random(100) < 65) { //25% every half second will spawn a cloud
@@ -62,7 +71,7 @@ class MainMenu extends Screen {
             queue.display();
 
 
-            //clouds front
+            //clouds front (set the Z value to in front of the spaceship)
             if(frameCount != 0 &&
                 frameCount % timeToFrames(250) == 0){    //MAYBE spawn clouds
                 if(random(100) < 65) { //25% every half second will spawn a cloud
@@ -93,6 +102,9 @@ class MainMenu extends Screen {
 
     }
 
+    /**
+    * For the main menu, this only concerns clicking on buttons
+    */
     public void onClick() {
         if(btnTutorial.isClicked()) {
             println("Tutorial got clicked");
@@ -101,6 +113,9 @@ class MainMenu extends Screen {
         }
     }
 
+    /**
+    * Press enter to start the game
+    */
     public void onType() {
         if(keyCode == ENTER){
           //  scrnMgr.setScreen("game");
