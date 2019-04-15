@@ -28,7 +28,11 @@ class AnimationQueue {
     public void display() {
         //run the animation queue in reverse to prevent random flashing
         for(int i = currentAnimations.size() - 1; i >= 0; i--){
-            currentAnimations.get(i).display();
+
+            //push and pop matrix to keep each element self contained
+            pushMatrix();
+            currentAnimations.get(i).display(); // display the element
+            popMatrix();
         }
 
     

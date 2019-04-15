@@ -10,7 +10,7 @@ class Cloud extends Animatable {
     /**
     *   Instructions stored like following: [circ1x, circ1y, circ1radius, circ2x, circ2y, ... , circnradius]
     */
-    private int[] instructions;
+    private Integer[] instructions;
 
     private final static int sizeX = 150,
                     sizeY = 75,
@@ -20,8 +20,11 @@ class Cloud extends Animatable {
     public Cloud(int lowTime, int highTime, AnimationQueue queue) {
         super(round(random(width)), -250, height + 500, round(random(lowTime, highTime)), queue);
 
-        instructions = new int[round(random(3, 10)) * 4];
-        generate();
+        final int BRANCHES = round(random(3)) + 3; //between 3 and 6 branches
+        final int DEPTH = round(random(2, 5)); // each branch has a depth between 2 and 5
+
+        instructions = new Integer[(BRANCHES * DEPTH * 3) + 3];
+        generate(BRANCHES, DEPTH);
     }
 
     public void display() {
@@ -32,12 +35,16 @@ class Cloud extends Animatable {
             for(int i = 0; i < instructions.length - 4; i += 4) {
                 
                 fill(230); //cloud color
-                ellipse(instructions[i] + currentPos.x, instructions[i + 1] + currentPos.y, instructions[i + 2], instructions[i + 3]);
+                
+                ellipse(instructions[i] + currentPos.x, //x coord
+                        instructions[i + 1] + currentPos.y, // y coord
+                        instructions[i + 2], // width
+                        instructions[i + 2]); // height
             }
         } catch (Exception e) {
             println("array thing for cloud messed up");
         }
-        rect(currentPos.x, currentPos.y, 20, 20);
+        
 
         super.display();
     }
@@ -48,12 +55,31 @@ class Cloud extends Animatable {
     * Otherwise, consider also switching it out for using pregenerated images.
     */
     public void generate(){
-        for(int i = 0; i < instructions.length - 3; i += 3) {
-            instructions[i] = round(random(sizeX));
-            instructions[i + 1] = round(random(sizeY));
-            instructions[i + 2] = round(random(minRad, maxRad));
-            instructions[i + 3] = round(random(minRad, maxRad));
+        //generate the root node
+        instructions[0] = 0;
+        instructions[1] = 0;
+        instructions[2] = round(random(minRad, maxRad));
+
+        for (int i = 0; i < branches; ++i) {
+            int prevx = instructions[0],
+                prevy = instructions[1],
+                prevRad = instructions[2];
+
+            for(int j = 0; j < depth; ++j) {
+                final int depthStartIndex = 3 * i * depth + 3 * j + 3;
+                final float constantThing = 1.0 / sqrt(2);
+                instructions[depthStartIndex] = round(random(-prevRad * constantThing, prevRad * constantThing)) + prevx; //x coord
+                instructions[depthStartIndex + 1] = round(random(-prevRad * constantThing, prevRad * constantThing)) + prevy; //y coord
+                instructions[depthStartIndex + 2] = round(random(minRad, maxRad)); // radius
+
+                prevx = instructions[depthStartIndex];
+                prevy = instructions[depthStartIndex + 1];
+                prevRad = instructions[depthStartIndex + 2];
+            }
         }
+
+        //DEBUG
+        println("Generated cloud: " + Arrays.deepToString(instructions));
     }
 
 
