@@ -71,12 +71,13 @@ class MainMenu extends Screen {
 
 
             //clouds front (set the Z value to in front of the spaceship)
-            if(frameCount != 0 &&
-                frameCount % timeToFrames(250) == 0){    //MAYBE spawn clouds
-                if(random(100) < 65) { //25% every half second will spawn a cloud
-                    Cloud c = new Cloud(3000, 8000, queue);
+            if(frameCount != 0){
+                if(frameCount % timeToFrames(250) == 0){    //MAYBE spawn clouds
+                    if(random(100) < 20) { //25% every half second will spawn a cloud
+                        Cloud c = new Cloud(3000, 8000, queue);
 
-                    queue.add(c);
+                        queue.add(c);
+                    }
                 }
             }
 
