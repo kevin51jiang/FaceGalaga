@@ -54,7 +54,7 @@ class Cloud extends Animatable {
     * Needs changing to make the cloud shapes more natural/all the cloud pieces actually contact each other.
     * Otherwise, consider also switching it out for using pregenerated images.
     */
-    public void generate(){
+    public void generate(int branches, int depth){
         //generate the root node
         instructions[0] = 0;
         instructions[1] = 0;
