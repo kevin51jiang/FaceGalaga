@@ -20,7 +20,8 @@ class Spaceship extends Animatable {
     public void display() {
         PVector temp = this.getCurrentPos();
 
-        if(frameCount % timeToFrames(1000) == 0) {
+        if(timeToFrames(1000) != 0 &&
+                frameCount % timeToFrames(1000) == 0) {
             modifier = new PVector( random(3.0) - 1.5, random(3.0) - 1.5);
         }
 
