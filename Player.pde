@@ -1,0 +1,41 @@
+class Player extends Animatable {
+    final static int MAX_MOVING_TIME = 200; //the maximum amount of time that it will take the ship to move to a new position in ms
+    final static int LARGE_AMOUNT_OF_TIME = 100000;
+    private PImage sprite;
+    
+    public Player(PVector currentPos, AnimationQueue queue) {
+        super(currentPos, currentPos, LARGE_AMOUNT_OF_TIME, queue);
+        
+        
+        sprite = loadImage("player.png");//choose a random cloud image to laod
+        sprite.resize(20,20);
+    }
+
+    public void display() {
+        PVector currentPos = this.getCurrentPos();
+        image(sprite, currentPos.x + 10, currentPos.y + 10);
+        
+        if(frameCount % 3 == 0) {
+            println("Player: " + currentPos.x + ", " + currentPos.y);
+        }
+
+        
+        super.display(); //cleanup
+
+        //keep it persisitent 
+        //tries to add itself back with a new animation
+        if(!this.isInAnimation()) {
+            this.addDeltaAnimation(new PVector(0, 0), //don't want it moving anywhere if it's already in the palyers' sdesired psot
+                                LARGE_AMOUNT_OF_TIME,
+                                queue);
+            queue.add(this);
+        }
+
+    }
+
+    public void updatePos(int x, int y) {
+        PVector dest = new PVector(x, y);
+        this.addAnimation(dest, MAX_MOVING_TIME, queue);
+    }
+    
+}

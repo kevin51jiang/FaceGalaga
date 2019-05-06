@@ -3,7 +3,7 @@ import gab.opencv.*;
 import java.util.*;
 import processing.video.*;
 
-import static javax.swing.JOptionPane.*;
+import javax.swing.JOptionPane;
 
 import java.util.regex.*;
 ScreenManager sm;

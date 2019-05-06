@@ -25,6 +25,8 @@ abstract class Animatable {
         this.addAnimation(dest, time, queue);
     }
 
+
+
     public Animatable(PVector start) {
         this.start = start;
         this.current = start;
@@ -62,7 +64,7 @@ abstract class Animatable {
     }
 
     /**
-    * Ads a delta animation. e.g. move 3 to the right, 5 up.
+    * Adds a delta animation. e.g. move 3 to the right, 5 up.
     */
     public void addDeltaAnimation(PVector delta, int time, AnimationQueue queue){
         this.start = current;
@@ -73,7 +75,7 @@ abstract class Animatable {
 
         this.queue = queue;
 
-        println("added anim: " + start.x + ", " + start.y + " - " + dest.x + ", " + dest.y);
+        // println("added anim: " + start.x + ", " + start.y + " - " + dest.x + ", " + dest.y);
 
     }
 
@@ -82,10 +84,12 @@ abstract class Animatable {
     * Currently uses linear interpolation so it jerks around a bit.
     */
     public PVector getCurrentPos() {
-
-
         current = PVector.lerp(dest, start, framesLeft / framesMax);
-        //println("Current pos: " + current.x + ", " + current.y + " lerp%= " + framesLeft/framesMax * 100);
+        // if (! (this instanceof Enemy) ){
+        //     if(frameCount % 3 == 0) {
+        //         println("Current pos: " + current.x + ", " + current.y + " lerp%= " + framesLeft/framesMax * 100);
+        //     }
+        // }
         return current;
     }
 

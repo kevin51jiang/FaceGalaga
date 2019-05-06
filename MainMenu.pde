@@ -75,7 +75,6 @@ class MainMenu extends Screen {
                 if(frameCount % timeToFrames(250) == 0){    //MAYBE spawn clouds
                     if(random(100) < 20) { //25% every half second will spawn a cloud
                         Cloud c = new Cloud(3000, 8000, queue);
-
                         queue.add(c);
                     }
                 }
