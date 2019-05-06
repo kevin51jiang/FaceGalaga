@@ -38,5 +38,9 @@ class AnimationQueue {
     
     }
 
+    public ArrayList<Animatable> dumpQueue() {
+        return currentAnimations;
+    }
+
 }
 

@@ -6,7 +6,7 @@ Because why not.
 
  - [X] **April 15** - Main menu animation done
 
- - [ ] **May 6** - Game is functional. Can control ship using face, and has autogenerating enemy ships. If collide with enemy ship, then you lose.  
+ - [x] **May 6** - Game is functional. Can control ship using face, and has autogenerating enemy ships. If collide with enemy ship, then you lose.  
 
  - [ ] **June 17** - Implement powerups, tutorial.
 

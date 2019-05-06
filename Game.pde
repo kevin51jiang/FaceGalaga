@@ -18,6 +18,8 @@ class Game extends Screen {
 
     private static final String uid = "Game";
     
+    int lives = 3;
+    private PImage lifeCounter = loadImage("player.png");
 
     public Game (ScreenManager sm, PApplet gameObject, Capture video, OpenCV opencv) {
         super(sm, Game.uid);
@@ -34,6 +36,8 @@ class Game extends Screen {
         println("Loading the Haar Cascade...");
         // opencv.loadCascade("haarcascade_frontalface_alt.xml", true);  
         opencv.loadCascade(OpenCV.CASCADE_FRONTALFACE); 
+        println("Resizing icons...");
+        lifeCounter.resize(height / 10, height / 10);
 
         println("Starting video... ");
         video.start();
@@ -42,6 +46,11 @@ class Game extends Screen {
 
     
     void display() {
+        if(lives == 0) {
+            JOptionPane.showMessageDialog(null, "You lost and got no high score because it hasn't been implemented yet", "Game Over", JOptionPane.WARNING_MESSAGE);
+            System.exit(0);
+        }
+
         background(0);
         
         scale(2);
@@ -85,7 +94,7 @@ class Game extends Screen {
         
         if(frameCount % 4 == 0) {
             player.updatePos(prevx, prevy);
-            println(prevx + ", " + prevy);
+            // println(prevx + ", " + prevy);
         }
         player.display();
 
@@ -101,9 +110,25 @@ class Game extends Screen {
 
         
         //do collision
-
+        ArrayList<Animatable> allAnimatables = queue.dumpQueue();
+        for(int i = allAnimatables.size() - 1; i >= 0; i--){
+            //check for collisions with any collidable objects that is not the player
+            if(allAnimatables.get(i) instanceof Collidable &&
+                !(allAnimatables.get(i) instanceof Player )) {
+                    if(player.isCollidingWith( (Collidable) allAnimatables.get(i))) {
+                        println("Collided");
+                        lives--;
+                        queue.remove(allAnimatables.get(i));
+                    }
+            }
+        }
 
         queue.display();
+        pushMatrix();
+        for(int i = 0; i < lives; i ++) {
+            image(lifeCounter, round( 0 + (height / 10) * i ), round((height * 9 / 10) - 10 ));
+        }
+        popMatrix();
 
     }
 
