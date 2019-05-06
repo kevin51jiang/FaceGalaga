@@ -12,10 +12,6 @@ class Player extends Animatable implements Collidable {
         sprite.resize(SIDE_LENGTH, SIDE_LENGTH);
     }
 
-    public PImage getSprite() {
-        return sprite;
-    }
-
     public void display() {
         PVector currentPos = this.getCurrentPos();
         image(sprite, currentPos.x + 10, currentPos.y + 10);

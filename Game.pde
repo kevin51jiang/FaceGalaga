@@ -3,7 +3,7 @@ import processing.video.*;
 import java.awt.*;
 import static javax.swing.JOptionPane.*;
 
-class Game extends Screen {
+class Game extends Screen implements Observer {
 
     AnimationQueue queue = new AnimationQueue();
     PApplet gameObject;
@@ -17,7 +17,7 @@ class Game extends Screen {
     Player player;
 
     private static final String uid = "Game";
-    
+    int score = 0;
     int lives = 3;
     private PImage lifeCounter = loadImage("player.png");
 
@@ -37,18 +37,35 @@ class Game extends Screen {
         // opencv.loadCascade("haarcascade_frontalface_alt.xml", true);  
         opencv.loadCascade(OpenCV.CASCADE_FRONTALFACE); 
         println("Resizing icons...");
-        lifeCounter.resize(height / 10, height / 10);
+        lifeCounter.resize(30, 30);
 
         println("Starting video... ");
         video.start();
         player = new Player(new PVector(width / 2, height / 2), queue);
+        queue.addObserver( (Observer) this);
     }
 
+    public void onAnimationQueueAdd() {} // we don't need to do anything
+
+    // increment score any time something is removed
+    public void onAnimationQueueRemove() {
+        println("yay more score");
+        score++;
+    } 
     
     void display() {
         if(lives == 0) {
-            JOptionPane.showMessageDialog(null, "You lost and got no high score because it hasn't been implemented yet", "Game Over", JOptionPane.WARNING_MESSAGE);
-            System.exit(0);
+            String facebookURL = "http://www.facebook.com/sharer.php?u=https://github.com/kevin51jiang/FaceGalaga";
+            String linkedinURL =  "https://www.linkedin.com/shareArticle?mini=true&url=https://github.com/kevin51jiang/FaceGalaga&title=Look%20at%20this%20cool%20game!&summary=I%20got%20" + score + "%20points.%20How%20many%20can%20you%20get?&source=https://github.com/kevin51jiang/FaceGalaga";
+
+            JOptionPane.showMessageDialog(null, "You died and got a total score of " + score, "Game Over", JOptionPane.WARNING_MESSAGE);
+            try {
+                java.awt.Desktop.getDesktop().browse(java.net.URI.create(linkedinURL));    //social sharing
+            } catch (Exception e) {
+                
+            } finally {
+                System.exit(0); // doneeeeee    
+            }
         }
 
         background(0);
@@ -118,7 +135,9 @@ class Game extends Screen {
                     if(player.isCollidingWith( (Collidable) allAnimatables.get(i))) {
                         println("Collided");
                         lives--;
+                        
                         queue.remove(allAnimatables.get(i));
+                        score--; //coutneract the auto incrememtning when ever something is removed
                     }
             }
         }
@@ -126,7 +145,7 @@ class Game extends Screen {
         queue.display();
         pushMatrix();
         for(int i = 0; i < lives; i ++) {
-            image(lifeCounter, round( 0 + (height / 10) * i ), round((height * 9 / 10) - 10 ));
+            image(lifeCounter,  30 + 30 * i, 400);
         }
         popMatrix();
 

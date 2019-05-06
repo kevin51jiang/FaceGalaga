@@ -40,12 +40,24 @@ abstract class Animatable {
     *   Subclasses will ALWAYS call super.display() at the end of their display() methods to help with cleanup.
     */
     public void display() {
-        this.framesLeft--;
+        try {
+            this.framesLeft--;
 
-        //if it has no frames left, remove it from the queue and it will stop being displayed
-        if(framesLeft <= 0){//do less than instead of == because floats are weird
-            queue.remove(this);
+            //if it has no frames left, remove it from the queue and it will stop being displayed
+            if(framesLeft <= 0){//do less than instead of == because floats are weird
+                    if(null == queue) {
+                    println("how tf");
+                }
+                if(null != queue ) {
+                    queue.remove(this);
+                }
+                
+            }    
+            
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        
     }
 
     /**

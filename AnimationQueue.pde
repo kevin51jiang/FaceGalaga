@@ -3,7 +3,16 @@
 */
 class AnimationQueue {
     private ArrayList<Animatable> currentAnimations = new ArrayList<Animatable>();
+    private Observer observer;
     public AnimationQueue() {}
+
+    public AnimationQueue(Observer observer) {
+        this.observer = observer;
+    }
+
+    public void addObserver(Observer obs) {
+        this.observer = obs;
+    }
 
     /**
     * @param  anim  Animatable object to add.
@@ -11,6 +20,9 @@ class AnimationQueue {
     * It should already have its animation parameters already preset.
     */
     public void add(Animatable anim){
+        if(null != observer) {
+            observer.onAnimationQueueAdd();
+        }
         currentAnimations.add(anim);
     }
 
@@ -19,6 +31,9 @@ class AnimationQueue {
     * Manually removes an object from the animation queue (stop it from being displayed in the next cycle)
     */
     public void remove(Animatable anim){
+        if(null != observer && !(anim instanceof Player)) {
+            observer.onAnimationQueueRemove();
+        }
         currentAnimations.remove(anim);
     }
 

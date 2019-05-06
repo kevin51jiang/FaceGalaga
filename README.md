@@ -10,7 +10,7 @@ Because why not.
 
  - [ ] **June 17** - Implement powerups, tutorial.
 
- - [ ] **Stretch Goal 1** - Implement score counting / internet sharing  (e.g. SHARE YOUR SCORE ON FACEBOOK. CLICK HERE)
+ - [X] **Stretch Goal 1** - Implement score counting / internet sharing  (e.g. SHARE YOUR SCORE ON FACEBOOK. CLICK HERE)
 
  - [ ] **Stretch Goal 2** - Upgrade graphics (more pregenerated vectors). Upgrade audio (better, more varied sounds, nice background music)
 
